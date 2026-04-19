@@ -1,0 +1,1754 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#09090b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Vitalidade 40+">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Vitalidade 40+ - Personal Trainer IA especializado em homens acima de 40 anos. Treinos personalizados para hipertrofia, redução de gordura visceral e vitalidade.">
+    <meta name="keywords" content="personal trainer, musculação, hipertrofia, treino 40 anos, emagrecimento, BFR, IA fitness">
+    <meta name="author" content="Vitalidade 40+">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://vitalidade-app.vercel.app/">
+    <meta property="og:title" content="Vitalidade 40+ | IA Personal Trainer Premium">
+    <meta property="og:description" content="Personal Trainer IA especializado em homens acima de 40 anos. Treinos personalizados para hipertrofia e redução de gordura visceral.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=1200&h=630&fit=crop">
+    <meta property="og:locale" content="pt_BR">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://vitalidade-app.vercel.app/">
+    <meta name="twitter:title" content="Vitalidade 40+ | IA Personal Trainer Premium">
+    <meta name="twitter:description" content="Personal Trainer IA especializado em homens acima de 40 anos.">
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=1200&h=630&fit=crop">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Vitalidade 40+">
+    
+    <!-- Performance: Preload & Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="dns-prefetch" href="https://mdhizwhomaovsxwxfnwf.supabase.co">
+    <link rel="dns-prefetch" href="https://api.groq.com">
+    
+    <!-- Fonts -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" as="style">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <title>Vitalidade 40+ | IA Personal Trainer Premium</title>
+    
+    <script>
+        // Gera o ícone V40+ via canvas e aplica como favicon + apple-touch-icon
+        (function () {
+            try {
+                var c = document.createElement('canvas');
+                c.width = c.height = 512;
+                var x = c.getContext('2d');
+                var g = x.createLinearGradient(0, 0, 512, 512);
+                g.addColorStop(0, '#0ea5e9');
+                g.addColorStop(1, '#8b5cf6');
+                x.fillStyle = g;
+                var r = 112;
+                x.beginPath();
+                x.moveTo(r, 0); x.lineTo(512 - r, 0); x.arcTo(512, 0, 512, r, r);
+                x.lineTo(512, 512 - r); x.arcTo(512, 512, 512 - r, 512, r);
+                x.lineTo(r, 512); x.arcTo(0, 512, 0, 512 - r, r);
+                x.lineTo(0, r); x.arcTo(0, 0, r, 0, r);
+                x.closePath(); x.fill();
+                x.fillStyle = 'white';
+                x.font = '900 195px "Arial Black", Arial, sans-serif';
+                x.textAlign = 'center';
+                x.textBaseline = 'middle';
+                x.fillText('V40+', 256, 262);
+                var d = c.toDataURL('image/png');
+                var lf = document.createElement('link');
+                lf.rel = 'icon'; lf.type = 'image/png'; lf.href = d;
+                document.head.appendChild(lf);
+                var la = document.createElement('link');
+                la.rel = 'apple-touch-icon'; la.sizes = '512x512'; la.href = d;
+                document.head.appendChild(la);
+            } catch (e) { }
+        })();
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif'],
+                        display: ['Arial Black', 'Helvetica Neue', 'sans-serif']
+                    },
+                    colors: {
+                        dark: '#0D0D0D',
+                        surface: '#181818',
+                        primary: '#CDFF00',
+                        accent: '#CDFF00',
+                        dim: '#888888'
+                    },
+                    animation: {
+                        'gradient-x': 'gradient-x 3s ease infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                        'slide-up': 'slide-up 0.3s ease-out',
+                        'fade-in': 'fade-in 0.3s ease-out',
+                        'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        'gradient-x': {
+                            '0%, 100%': { 'background-size': '200% 200%', 'background-position': 'left center' },
+                            '50%': { 'background-size': '200% 200%', 'background-position': 'right center' }
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-5px)' },
+                        },
+                        'slide-up': {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        'fade-in': {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        'pulse-glow': {
+                            '0%, 100%': { boxShadow: '0 0 5px rgba(205, 255, 0, 0.5)' },
+                            '50%': { boxShadow: '0 0 20px rgba(205, 255, 0, 0.8)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        html {
+            overflow-x: hidden;
+            max-width: 100%;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: #0D0D0D;
+            color: #FFFFFF;
+            margin: 0;
+            padding-bottom: 90px;
+            overflow-x: hidden;
+            max-width: 100%;
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+
+        .glass-panel {
+            background: #181818;
+            border: 1px solid #222;
+            box-shadow: none;
+        }
+
+        .bold-title {
+            font-family: 'Arial Black', 'Helvetica Neue', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            line-height: 0.9;
+        }
+
+        .page {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.4s ease-out;
+        }
+
+        .page.active {
+            display: block;
+            opacity: 1;
+            animation: slideInPage 0.4s forwards;
+        }
+
+        @keyframes slideInPage {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .nav-item.active {
+            color: #CDFF00;
+            font-weight: 900;
+        }
+
+        .nav-item {
+            transition: all 0.2s ease-in-out;
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 1px;
+            font-family: 'Arial Black', sans-serif;
+        }
+
+        .chat-msg {
+            max-width: 92%;
+            padding: 18px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            line-height: 1.4;
+            animation: fadeIn 0.2s ease-out forwards;
+            border: 1px solid #222;
+        }
+
+        .chat-user {
+            background: #CDFF00;
+            color: #0D0D0D;
+            border-radius: 0;
+            margin-left: auto;
+            border: none;
+            font-weight: 700;
+        }
+
+        .chat-ai {
+            background: #181818;
+            color: #FFFFFF;
+            border-radius: 0;
+            margin-right: auto;
+            border: 1px solid #333;
+        }
+
+        .typing span {
+            width: 6px;
+            height: 6px;
+            background: #CDFF00;
+            border-radius: 0;
+            display: inline-block;
+            margin: 0 2px;
+            animation: bounce 1.4s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-4px); }
+        }
+
+        input,
+        select,
+        textarea {
+            background: #181818 !important;
+            border: 1px solid #333 !important;
+            border-radius: 0 !important;
+            padding: 16px !important;
+            color: white !important;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 14px !important;
+            transition: all 0.2s ease;
+            font-family: 'Helvetica Neue', sans-serif !important;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none !important;
+            border-color: #CDFF00 !important;
+            box-shadow: none !important;
+        }
+
+        .bfr-tag {
+            background: #CDFF00;
+            color: #0D0D0D;
+            padding: 2px 6px;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 10px;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            padding: 16px;
+            border-radius: 0;
+            font-size: 12px;
+            font-family: 'Arial Black', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .toast-success { background: #CDFF00; color: #0D0D0D; }
+        .toast-error { background: #ef4444; color: #FFFFFF; }
+
+        .btn-bold {
+            background: #CDFF00;
+            color: #0D0D0D;
+            font-family: 'Arial Black', sans-serif;
+            text-transform: uppercase;
+            padding: 14px;
+            border: none;
+            border-radius: 0;
+            font-size: 14px;
+            letter-spacing: -0.5px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-bold:active { opacity: 0.8; }
+
+        .card-bold {
+            background: #181818;
+            border: 1px solid #333;
+            padding: 20px;
+            border-radius: 0;
+        }
+
+        .label-bold {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #888;
+            font-family: 'Arial Black', sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Offline Indicator -->
+    <div id="offline-indicator" class="offline-indicator" role="alert">
+        📴 Você está offline - Algumas funcionalidades podem não estar disponíveis
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <!-- Pull to Refresh Indicator -->
+    <div id="ptr-indicator" class="ptr-indicator" aria-hidden="true">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+    </div>
+
+    <!-- Install PWA Banner -->
+    <div id="install-banner" class="install-banner hidden">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl">💪</div>
+            <div class="flex-1">
+                <p class="font-bold text-white text-sm">Instalar Vitalidade 40+</p>
+                <p class="text-white/80 text-xs">Acesse offline e tenha melhor desempenho</p>
+            </div>
+            <button onclick="installPWA()" class="bg-white text-primary px-4 py-2 rounded-xl font-bold text-sm hover:bg-white/90 transition-colors">
+                Instalar
+            </button>
+            <button onclick="dismissInstallBanner()" class="text-white/60 hover:text-white p-1" aria-label="Fechar">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Setup Screen (Auth) -->
+    <div id="auth-screen" class="fixed inset-0 bg-dark flex flex-col items-center p-6 z-50 overflow-y-auto pt-16">
+        <div class="absolute inset-0 bg-dark opacity-10"></div>
+        <div class="card-bold w-full max-w-sm space-y-6 text-center relative z-10 mx-auto">
+            <div class="w-20 h-20 bg-primary mx-auto flex items-center justify-center shadow-[0_0_0_4px_#181818,0_0_0_5px_#CDFF00] mb-2">
+                <span class="text-4xl text-dark font-display font-black tracking-tighter">V40</span>
+            </div>
+            <div>
+                <h1 class="text-6xl bold-title text-primary">Vitalidade</h1>
+                <p class="text-white font-bold text-[10px] tracking-[4px] uppercase mt-2">Personal IA Premium</p>
+            </div>
+
+            <div id="auth-forms" class="space-y-4 pt-6 border-t border-white/5">
+                <p class="label-bold text-center">Inicie sua jornada</p>
+                <div class="space-y-3">
+                    <input type="email" id="auth-email" placeholder="E-MAIL" autocomplete="email" aria-label="E-mail">
+                    <input type="password" id="auth-password" placeholder="SENHA" autocomplete="current-password" aria-label="Senha" minlength="6">
+                    
+                    <button onclick="handleAuth('login')" class="w-full btn-bold py-4">
+                        Acessar Conta
+                    </button>
+                    <button onclick="handleAuth('signup')" class="w-full bg-white text-dark font-display text-[12px] py-4 uppercase">
+                        Criar Nova Conta
+                    </button>
+                </div>
+                <p id="auth-error" class="text-red-400 text-[10px] font-bold hidden bg-red-900/30 p-2 mt-2 uppercase"></p>
+                <div id="setup-warnings" class="hidden text-left bg-red-900/30 border border-red-500/50 p-3 rounded-none mt-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header App -->
+    <header id="app-header" class="fixed top-0 w-full z-40 bg-dark px-5 py-4 flex justify-between items-center hidden border-b border-zinc-800">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-primary flex items-center justify-center">
+                <span class="text-dark font-display font-black text-xl">V</span>
+            </div>
+            <div>
+                <h1 class="font-display font-black text-lg text-white tracking-tight uppercase">Vitalidade<span class="text-primary">.</span></h1>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="toggleVoiceTarget()" id="btn-voice-mode" class="flex items-center gap-2 border border-zinc-700 bg-zinc-900 px-3 py-1.5 transition-colors">
+                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                <span class="text-[10px] text-white font-display font-black tracking-widest">HANDS-FREE</span>
+            </button>
+            <button onclick="showPage('vision')" class="flex items-center gap-2 border border-primary/20 bg-primary/5 px-3 py-1.5 transition-colors hover:bg-primary hover:text-dark group">
+                <svg class="w-3 h-3 text-primary group-hover:text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <span class="text-[10px] text-primary group-hover:text-dark font-display font-black tracking-widest">VISÃO IA</span>
+            </button>
+        </div>
+    </header>
+
+    <main id="app-main" class="pt-20 px-5 hidden h-full">
+        <!-- HOME -->
+        <div id="page-home" class="page active">
+            <div id="welcome-section"></div>
+        </div>
+
+        <!-- CAMERA VISION AI -->
+        <div id="page-vision" class="page h-[calc(100vh-100px)] flex flex-col">
+            <div class="mb-4">
+                <h2 class="bold-title text-3xl text-white">Análise Biomecânica</h2>
+                <p class="label-bold">COMPUTER VISION <span class="text-primary tracking-widest ml-2">MEDIAPIPE POSE</span></p>
+            </div>
+            <div class="flex-1 relative bg-black border-2 border-zinc-800 flex items-center justify-center overflow-hidden" id="camera-container">
+                <div id="camera-status" class="absolute z-10 flex flex-col items-center">
+                    <svg class="w-12 h-12 text-zinc-600 mb-2 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    <span class="text-sm font-display font-black text-zinc-500 uppercase tracking-widest">Iniciando Sensor Neural...</span>
+                </div>
+                <!-- Simulated UI overlay for the pose tracking -->
+                <div class="absolute inset-0 border border-primary/30 m-4 pointer-events-none hidden" id="vision-hud">
+                    <div class="absolute top-2 left-2 bg-dark/80 px-2 py-1 flex items-center gap-2">
+                        <div class="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                        <span class="text-[10px] font-display text-primary tracking-widest uppercase">Angle Track</span>
+                    </div>
+                    <div class="absolute top-2 right-2 bg-dark/80 px-2 py-1">
+                        <span class="text-[10px] font-display text-white tracking-widest uppercase" id="vision-tution">Joelho: 90° | Coluna: Estável</span>
+                    </div>
+                    <div class="absolute bottom-2 left-0 right-0 text-center">
+                        <p class="text-primary text-xs font-black bg-dark/90 inline-block px-4 py-2 uppercase" id="vision-feedback">Aguardando Movimento...</p>
+                    </div>
+                </div>
+
+                <div id="warmup-overlay" class="absolute top-8 left-0 right-0 z-20 hidden flex-col items-center">
+                    <div class="bg-dark/95 border border-accent rounded-xl p-4 text-center w-[90%] max-w-sm pointer-events-none shadow-2xl">
+                        <h3 id="warmup-title" class="text-accent font-black uppercase tracking-widest text-lg mb-1">Passo 1</h3>
+                        <p id="warmup-desc" class="text-white text-xs mb-3 font-medium">Instrução</p>
+                        <div class="w-full bg-zinc-800 h-2 rounded-full overflow-hidden">
+                            <div id="warmup-progress" class="bg-accent h-full w-0 transition-all duration-1000 ease-linear"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <video id="webcam-video" class="w-full h-full object-cover hidden" playsinline autoplay muted></video>
+                <canvas id="pose-canvas" class="absolute inset-0 w-full h-full object-cover hidden"></canvas>
+            </div>
+            <div class="mt-4 flex gap-2">
+                <button onclick="startVisionAI()" class="flex-1 border border-primary bg-primary/10 text-primary py-3 font-display font-black text-xs uppercase tracking-widest hover:bg-primary hover:text-dark transition-colors">VBT Livre</button>
+                <button onclick="startWarmupSequence()" class="flex-1 border border-accent bg-accent/10 text-accent py-3 font-display font-black text-[10px] uppercase tracking-widest hover:bg-accent hover:text-dark transition-colors flex flex-col items-center justify-center leading-tight"><span>🔥 Aquecimento</span>Guiado</button>
+                <button onclick="stopVisionAI()" class="flex-1 border border-red-500/50 bg-red-900/20 text-red-400 py-3 font-display font-black text-xs uppercase tracking-widest hover:bg-red-500 hover:text-white transition-colors">Desligar</button>
+            </div>
+            <p class="text-[10px] text-zinc-500 mt-3 text-center uppercase tracking-widest">Sensoriamento local on-device VBT. Zero latência na nuvem.</p>
+        </div>
+
+        <!-- IA CHAT -->
+        <div id="page-ia" class="page flex-col h-[calc(100vh-160px)]">
+            <div class="card-bold mb-4 flex items-center gap-3 relative">
+                <div class="w-12 h-12 bg-white flex items-center justify-center text-xl">🧠</div>
+                <div>
+                    <h3 class="label-bold">BIOMECÂNICA & LONGEVIDADE</h3>
+                    <p class="text-[14px] text-primary font-display font-black">SESSÃO ATIVA</p>
+                </div>
+            </div>
+
+            <div id="chat-messages" class="flex-1 overflow-y-auto space-y-4 pb-56 pr-1"></div>
+
+            <div class="fixed bottom-20 left-0 right-0 px-4 card-bold border-t border-zinc-800 z-30">
+                <div class="flex gap-2 mb-3 overflow-x-auto pb-2 hide-scrollbar">
+                    <button onclick="prompt('Prescreva minha sessão híbrida de hoje: foque em hipertrofia miofibrilar sem agravar fadiga articular.')" class="whitespace-nowrap border border-zinc-700 bg-zinc-900 text-white text-[10px] px-4 py-2 font-display uppercase tracking-widest hover:border-primary transition-colors">🔥 ESCULPIR FÍSICO</button>
+                    <button onclick="prompt('Mapeie o protocolo metabólico (HIIT/SIT) para maximizar a oxidação de gordura visceral, respeitando minha recuperação 40+.')" class="whitespace-nowrap border border-zinc-700 bg-zinc-900 text-white text-[10px] px-4 py-2 font-display uppercase tracking-widest hover:border-primary transition-colors">💥 SECAR VISCERAL</button>
+                    <button onclick="prompt('Especifique um protocolo BFR (Oclusão) para hipertrofia com carga ultraleve, poupando completamente os tendões e articulações.')" class="whitespace-nowrap border border-primary bg-primary/10 text-primary text-[10px] px-4 py-2 font-display uppercase tracking-widest transition-colors">🩸 REABILITAÇÃO BFR</button>
+                </div>
+                <div class="flex gap-0 relative">
+                    <input type="text" id="chat-input" placeholder="DIGITE SUA MENSAGEM..." onkeypress="if(event.key==='Enter')send()" class="pl-4 pr-16 py-4 bg-zinc-900 border-zinc-800 text-sm font-bold uppercase tracking-widest" aria-label="Mensagem para o coach IA">
+                    <button onclick="send()" class="absolute right-0 top-0 bottom-0 w-14 bg-primary flex items-center justify-center hover:opacity-90 transition-opacity" aria-label="Enviar mensagem">
+                        <svg class="w-6 h-6 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PERFIL -->
+        <div id="page-perfil" class="page pb-6">
+            <div id="profile-content"></div>
+        </div>
+
+        <!-- PROGRAMA -->
+        <div id="page-programa" class="page pb-6">
+            <div id="programa-content"></div>
+        </div>
+
+        <!-- HISTÓRICO -->
+        <div id="page-historico" class="page">
+            <div class="flex justify-between items-end mb-8 border-b-4 border-primary pb-4">
+                <div>
+                    <h2 class="bold-title text-4xl text-white">Histórico</h2>
+                    <p class="label-bold">PROGRESSO FISIOLÓGICO</p>
+                </div>
+                <div class="text-primary font-display font-black text-6xl leading-none" id="history-total">0</div>
+            </div>
+            <div id="history-list" class="space-y-4"></div>
+        </div>
+    </main>
+
+    <!-- Navigation -->
+    <nav id="app-nav" class="fixed bottom-0 left-0 right-0 bg-dark border-t border-zinc-800 flex justify-around pt-4 pb-8 z-40 hidden">
+        <button class="nav-item active flex flex-col items-center gap-1 text-dim w-14" onclick="showPage('home', this)" aria-label="Página inicial">
+            <div class="w-6 h-6 flex items-center justify-center">H</div>
+            <span class="text-[9px]">INÍCIO</span>
+        </button>
+        <button class="nav-item flex flex-col items-center gap-1 text-dim w-14" onclick="showPage('ia', this)" aria-label="Chat com IA">
+             <div class="w-6 h-6 flex items-center justify-center">IA</div>
+            <span class="text-[9px]">CHART</span>
+        </button>
+        <button class="nav-item flex flex-col items-center gap-1 text-dim w-14" onclick="showPage('programa', this)" aria-label="Programa de treinos">
+             <div class="w-6 h-6 flex items-center justify-center">PR</div>
+            <span class="text-[9px]">PLAN</span>
+        </button>
+        <button class="nav-item flex flex-col items-center gap-1 text-dim w-14" onclick="showPage('historico', this)" aria-label="Histórico de treinos">
+             <div class="w-6 h-6 flex items-center justify-center">EV</div>
+            <span class="text-[9px]">EVOL</span>
+        </button>
+        <button class="nav-item flex flex-col items-center gap-1 text-dim w-14" onclick="showPage('perfil', this)" aria-label="Perfil do usuário">
+             <div class="w-6 h-6 flex items-center justify-center">PF</div>
+            <span class="text-[9px]">PERFIL</span>
+        </button>
+    </nav>
+
+    <!-- MODAL PREMIUM -->
+    <div id="modal" class="fixed inset-0 bg-black/80 z-50 hidden opacity-0 transition-opacity duration-300 items-end sm:items-center justify-center p-0 sm:p-4 pb-0 backdrop-blur-sm">
+        <div class="glass-panel w-full sm:max-w-md h-[85vh] sm:h-auto sm:max-h-[85vh] rounded-t-3xl sm:rounded-3xl flex flex-col shadow-2xl transform translate-y-full transition-transform duration-300" id="modal-content-wrapper">
+            <div class="p-5 border-b border-white/10 flex justify-between items-center bg-slate-900/50 rounded-t-3xl">
+                <h3 id="modal-title" class="text-xl font-bold tracking-tight text-white"></h3>
+                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-slate-300 hover:bg-white/20 hover:text-white transition-colors" aria-label="Fechar modal">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="modal-body" class="p-5 overflow-y-auto flex-1 space-y-4"></div>
+        </div>
+    </div>
+
+    <!-- ==============================================================
+         CONFIGURAÇÕES E SCRIPTS PRINCIPAIS
+         ============================================================== -->
+    <script>
+        // ================================================================
+        // CONFIGURAÇÃO SUPABASE
+        // ================================================================
+        const SUPABASE_URL = "https://mdhizwhomaovsxwxfnwf.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_dUhtXtTQ2r2XbpJfFucT4A_ejgfjBtN";
+
+        // ================================================================
+        // ESTADO GLOBAL
+        // ================================================================
+        let sb = null;
+        let isSupabaseConfigured = SUPABASE_ANON_KEY && SUPABASE_ANON_KEY.length > 10;
+        let user = null;
+        let profile = {};
+        let workouts = [];
+        let activeProgram = null;
+        let recentCheckins = [];
+        let deferredPrompt = null; // PWA install
+        let isOnline = navigator.onLine;
+
+        // ================================================================
+        // SERVICE WORKER REGISTRATION
+        // ================================================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('✅ Service Worker registered:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.error('❌ Service Worker registration failed:', error);
+                    });
+            });
+        }
+
+        // ================================================================
+        // PWA INSTALL PROMPT
+        // ================================================================
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Show install banner after 3 seconds if not dismissed before
+            const dismissed = localStorage.getItem('pwa-install-dismissed');
+            if (!dismissed) {
+                setTimeout(() => {
+                    document.getElementById('install-banner').classList.remove('hidden');
+                }, 3000);
+            }
+        });
+
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        showToast('Vitalidade 40+ instalado com sucesso!', 'success');
+                    }
+                    deferredPrompt = null;
+                    document.getElementById('install-banner').classList.add('hidden');
+                });
+            }
+        }
+
+        function dismissInstallBanner() {
+            document.getElementById('install-banner').classList.add('hidden');
+            localStorage.setItem('pwa-install-dismissed', 'true');
+        }
+
+        // ================================================================
+        // ONLINE/OFFLINE DETECTION
+        // ================================================================
+        window.addEventListener('online', () => {
+            isOnline = true;
+            document.getElementById('offline-indicator').classList.remove('show');
+            showToast('Conexão restaurada!', 'success');
+        });
+
+        window.addEventListener('offline', () => {
+            isOnline = false;
+            document.getElementById('offline-indicator').classList.add('show');
+            showToast('Você está offline', 'warning');
+        });
+
+        // ================================================================
+        // TOAST NOTIFICATION SYSTEM
+        // ================================================================
+        function showToast(message, type = 'info', duration = 4000) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <span class="text-lg">${type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️'}</span>
+                    <span>${escapeHtml(message)}</span>
+                </div>
+            `;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100px)';
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        // ================================================================
+        // INPUT VALIDATION & SANITIZATION
+        // ================================================================
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function validatePassword(password) {
+            return password && password.length >= 6;
+        }
+
+        function showInputError(inputId, message) {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.classList.add('error');
+                setTimeout(() => input.classList.remove('error'), 3000);
+            }
+            showToast(message, 'error');
+        }
+
+        // ================================================================
+        // PULL TO REFRESH (Mobile)
+        // ================================================================
+        let touchStartY = 0;
+        let touchEndY = 0;
+        let isRefreshing = false;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        document.addEventListener('touchmove', (e) => {
+            if (window.scrollY === 0 && !isRefreshing) {
+                touchEndY = e.touches[0].clientY;
+                const diff = touchEndY - touchStartY;
+                if (diff > 80) {
+                    document.getElementById('ptr-indicator').classList.add('active');
+                }
+            }
+        }, { passive: true });
+
+        document.addEventListener('touchend', () => {
+            const diff = touchEndY - touchStartY;
+            if (diff > 80 && window.scrollY === 0 && !isRefreshing) {
+                triggerRefresh();
+            }
+            document.getElementById('ptr-indicator').classList.remove('active');
+            touchStartY = 0;
+            touchEndY = 0;
+        });
+
+        async function triggerRefresh() {
+            if (isRefreshing || !user) return;
+            isRefreshing = true;
+            
+            const indicator = document.getElementById('ptr-indicator');
+            indicator.classList.add('loading');
+
+            try {
+                await loadData();
+                showToast('Dados atualizados!', 'success');
+            } catch (e) {
+                showToast('Erro ao atualizar', 'error');
+            } finally {
+                indicator.classList.remove('loading');
+                isRefreshing = false;
+            }
+        }
+
+        // ================================================================
+        // CHECKUP DE CONFIGURAÇÃO
+        // ================================================================
+        const warningsBox = document.getElementById('setup-warnings');
+        if (!isSupabaseConfigured) {
+            warningsBox.classList.remove('hidden');
+            warningsBox.innerHTML += `<p class="text-[10px] text-red-200 mb-2"><b>❌ BD AUSENTE:</b> Configure as variáveis SUPABASE_URL e SUPABASE_ANON_KEY no Vercel.</p>`;
+        }
+
+        // ================================================================
+        // SUPABASE INITIALIZATION
+        // ================================================================
+        if (isSupabaseConfigured) {
+            try {
+                sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                
+                sb.auth.onAuthStateChange((event, session) => {
+                    if (event === 'SIGNED_IN') {
+                        user = session.user;
+                        initApp();
+                    } else if (event === 'SIGNED_OUT') {
+                        location.reload();
+                    }
+                });
+
+                sb.auth.getSession().then(({ data: { session } }) => {
+                    if (session) {
+                        user = session.user;
+                        initApp();
+                    }
+                }).catch(err => console.log('Sessão expirada', err));
+            } catch (e) {
+                console.error("Supabase Error", e);
+                showToast('Erro ao conectar com o banco de dados', 'error');
+            }
+        }
+
+        // ================================================================
+        // AUTENTICAÇÃO
+        // ================================================================
+        async function handleAuth(type) {
+            if (!isSupabaseConfigured) {
+                showToast('Banco de dados não configurado', 'error');
+                return;
+            }
+
+            const email = document.getElementById('auth-email').value.trim();
+            const pass = document.getElementById('auth-password').value;
+            const errEl = document.getElementById('auth-error');
+
+            // Validation
+            if (!email) {
+                showInputError('auth-email', 'Digite seu e-mail');
+                return;
+            }
+            if (!validateEmail(email)) {
+                showInputError('auth-email', 'E-mail inválido');
+                return;
+            }
+            if (!validatePassword(pass)) {
+                showInputError('auth-password', 'Senha deve ter no mínimo 6 caracteres');
+                return;
+            }
+
+            try {
+                const res = type === 'signup'
+                    ? await sb.auth.signUp({ email, password: pass })
+                    : await sb.auth.signInWithPassword({ email, password: pass });
+
+                if (res.error) throw res.error;
+
+                if (type === 'signup' && res.data.user) {
+                    await sb.from('profiles').upsert({
+                        id: res.data.user.id,
+                        name: email.split('@')[0],
+                        created_at: new Date().toISOString()
+                    });
+                    showToast('Conta criada com sucesso!', 'success');
+                }
+            } catch (ex) {
+                errEl.textContent = ex.message || "Erro no login.";
+                errEl.classList.remove('hidden');
+                showToast('Erro: ' + (ex.message || 'Falha na autenticação'), 'error');
+            }
+        }
+
+        async function initApp() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('app-header').classList.remove('hidden');
+            document.getElementById('app-main').classList.remove('hidden');
+            document.getElementById('app-nav').classList.remove('hidden');
+
+            await loadData();
+            showPage('home', document.querySelectorAll('.nav-item')[0]);
+
+            setTimeout(() => {
+                const msg = `Bem-vindo ${profile.name ? profile.name.split(' ')[0] : 'Time Vitalidade'} ao QG Biomédico. Sua inteligência avançada está conectada! Como ajudarei a moldar seu corpo e biologia hoje?`;
+                addChatMsg('ai', msg.replace(/\n/g, '<br>'));
+            }, 800);
+        }
+
+        async function loadData() {
+            try {
+                const { data: p } = await sb.from('profiles').select('*').eq('id', user.id).single();
+                if (p) profile = p || { name: 'Usuário Vitalidade', age: 40 };
+
+                const { data: w } = await sb.from('workout_history').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+                if (w) workouts = w || [];
+
+                const { data: prog } = await sb.from('programs')
+                    .select('*').eq('user_id', user.id).eq('active', true)
+                    .order('created_at', { ascending: false }).limit(1).maybeSingle();
+                activeProgram = prog || null;
+
+                const { data: ci } = await sb.from('checkins')
+                    .select('*').eq('user_id', user.id)
+                    .order('created_at', { ascending: false }).limit(20);
+                recentCheckins = ci || [];
+            } catch (e) {
+                console.error("Falha ao puxar os dados do usuário:", e);
+                showToast('Erro ao carregar dados', 'error');
+            }
+        }
+
+        // ================================================================
+        // NAVEGAÇÃO & UI RENDERING
+        // ================================================================
+        function showPage(pageId, btnElement) {
+            document.querySelectorAll('.page').forEach(p => {
+                p.classList.remove('active');
+                p.style.display = 'none';
+            });
+            
+            const target = document.getElementById(`page-${pageId}`);
+            target.style.display = pageId === 'ia' ? 'flex' : 'block';
+            setTimeout(() => target.classList.add('active'), 10);
+
+            if (btnElement) {
+                document.querySelectorAll('.nav-item').forEach(b => {
+                    b.classList.remove('active');
+                    b.classList.add('text-slate-400');
+                });
+                btnElement.classList.add('active');
+                btnElement.classList.remove('text-slate-400');
+            }
+            
+            if (pageId === 'home') renderHome();
+            if (pageId === 'perfil') renderProfile();
+            if (pageId === 'historico') renderHistory();
+            if (pageId === 'programa') renderProgram();
+        }
+
+        function renderHome() {
+            const el = document.getElementById('welcome-section');
+            const doneTotal = workouts.filter(x => x.completed).length;
+            const nm = profile.name ? profile.name.split(' ')[0] : 'Atleta';
+            const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+            const todayName = dayNames[new Date().getDay()];
+            let todayDay = null;
+            
+            if (activeProgram && activeProgram.program_data && activeProgram.program_data.days) {
+                todayDay = activeProgram.program_data.days.find(d => d.day === todayName || d.day.startsWith(todayName.slice(0, 3)));
+            }
+
+            const programSection = activeProgram ? `
+                <div class="card-bold mb-6 border-l-8 border-primary relative overflow-hidden">
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <span class="label-bold">Programa Ativo</span>
+                            <h3 class="bold-title text-3xl text-white mt-1 uppercase">${escapeHtml(activeProgram.program_data.name)}</h3>
+                        </div>
+                        <button onclick="showPage('programa', null)" class="text-[10px] font-display font-black text-primary border border-primary px-3 py-2 uppercase hover:bg-primary hover:text-dark transition-all">Ver Painel</button>
+                    </div>
+                    ${todayDay ? `
+                    <div class="bg-primary/5 border border-primary/10 p-4 mb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-primary text-[10px] font-display font-black uppercase tracking-widest">Sessão: ${todayName}</span>
+                            <span class="text-white text-[10px] font-display font-black uppercase">${todayDay.exercises.length} EX</span>
+                        </div>
+                        <p class="text-white font-black text-xl italic uppercase tracking-tighter">${escapeHtml(todayDay.focus)}</p>
+                    </div>
+                    <button onclick="startDayWorkout('${encodeURIComponent(JSON.stringify(todayDay))}')" class="w-full btn-bold py-5 flex justify-center items-center gap-3 text-lg">
+                        ▶ INICIAR PROTOCOLO
+                    </button>` : `
+                    <div class="bg-zinc-900 border border-zinc-800 p-6 text-center italic">
+                        <p class="text-zinc-500 font-display uppercase text-xs tracking-widest">Descanso Estratégico Necessário</p>
+                    </div>`}
+                </div>` : `
+                <div class="card-bold mb-6 border-l-8 border-dim">
+                    <div class="text-center py-6">
+                        <h3 class="bold-title text-2xl text-white mb-2 uppercase">Sem Protocolo</h3>
+                        <p class="label-bold mb-6">Solicite seu plano à IA para começar</p>
+                        <button onclick="promptProgram()" class="w-full btn-bold py-5">
+                            ✨ GERAR PROTOCOLO TAURUS
+                        </button>
+                    </div>
+                </div>`;
+
+            el.innerHTML = `
+                <div class="mb-12 text-center mt-4">
+                    <h2 class="bold-title text-8xl text-primary leading-none mb-1">V40<span class="text-white">+</span></h2>
+                    <p class="label-bold tracking-[8px] text-[12px]">High Performance</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 mb-6">
+                    <div class="card-bold">
+                        <span class="label-bold">Atleta</span>
+                        <div class="text-2xl font-display font-black text-white mt-1 uppercase">${nm}</div>
+                    </div>
+                    <div class="card-bold">
+                        <span class="label-bold">Sessões</span>
+                        <div class="text-4xl font-display font-black text-primary mt-1">${doneTotal}</div>
+                    </div>
+                </div>
+
+                ${programSection}
+
+                <div class="space-y-2">
+                    <button onclick="showPage('ia')" class="w-full btn-bold py-6 px-6 text-left flex justify-between items-center group">
+                        <span class="text-2xl">COACH IA</span>
+                        <span class="text-3xl group-hover:translate-x-2 transition-transform">→</span>
+                    </button>
+                </div>
+
+                ${recentCheckins.length >= 5 ? `
+                <div class="mt-4 p-4 border-2 border-primary bg-primary/5 flex items-center justify-between">
+                    <div>
+                        <p class="label-bold text-primary">Análise Pendente</p>
+                        <p class="text-white text-xs font-black uppercase mt-1">Dados de Volume Processados</p>
+                    </div>
+                    <button onclick="promptAnalysis()" class="btn-bold px-4 py-2 text-[10px]">EXECUTAR</button>
+                </div>` : ''}
+                
+                <div class="mt-8 opacity-20 text-center">
+                    <p class="label-bold">Protocolo Taurus v2.4</p>
+                </div>
+            `;
+        }
+
+        function promptProgram() {
+            showPage('ia', document.querySelectorAll('.nav-item')[1]);
+            setTimeout(() => {
+                document.getElementById('chat-input').value = 'Estruture meu Mesociclo Tático de 5 dias. Otimize a relação volume-fadiga e priorize a mecânica para preservação das articulações na minha faixa etária.';
+                send();
+            }, 300);
+        }
+
+        function promptAnalysis() {
+            showPage('ia', document.querySelectorAll('.nav-item')[1]);
+            setTimeout(() => {
+                document.getElementById('chat-input').value = 'Cruze os marcadores dos meus últimos check-ins (RPE e Fadiga). Calibre o volume e a periodização para evitar overtraining sistêmico.';
+                send();
+            }, 300);
+        }
+
+        function startDayWorkout(dayStr) {
+            const day = JSON.parse(decodeURIComponent(dayStr));
+            showPage('ia', document.querySelectorAll('.nav-item')[1]);
+            setTimeout(() => {
+                document.getElementById('chat-input').value = `Iniciando o bloco de ${day.focus}. Extraia a mecânica avançada dos movimentos, cadência ideal e pontos críticos de falha para maximizar a tensão mecânica com segurança.`;
+                send();
+            }, 300);
+        }
+
+        function renderProfile() {
+            const p = profile;
+            document.getElementById('profile-content').innerHTML = `
+                <h2 class="bold-title text-4xl mb-8 uppercase text-white">Prontuário Médico</h2>
+                <form id="profile-form" class="space-y-6 pb-20" onsubmit="event.preventDefault(); saveProfileData();">
+                    <div class="space-y-2">
+                        <label class="label-bold ml-1" for="p_name">Identificação</label>
+                        <input type="text" id="p_name" value="${escapeHtml(p.name || '')}" placeholder="NOME COMPLETO" required>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="label-bold ml-1" for="p_age">Idade</label>
+                            <input type="number" id="p_age" value="${p.age || ''}" placeholder="IDADE" min="18" max="120" required>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="label-bold ml-1" for="p_weight">Peso (kg)</label>
+                            <input type="number" id="p_weight" value="${p.weight || ''}" placeholder="KG" min="30" max="300" step="0.1">
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="label-bold ml-1" for="p_level">Nível Base</label>
+                        <select id="p_level" class="appearance-none" required>
+                            <option value="iniciante" ${p.level === 'iniciante' ? 'selected' : ''}>Adaptação Tíssular (Iniciante)</option>
+                            <option value="intermediario" ${p.level === 'intermediario' ? 'selected' : ''}>Consolidado (Intermediário)</option>
+                            <option value="avancado" ${p.level === 'avancado' ? 'selected' : ''}>Atleta Master (Avançado)</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="label-bold ml-1" for="p_obj">Alvo Fisiológico</label>
+                        <select id="p_obj" class="appearance-none" required>
+                            <option value="hipertrofia" ${p.objective === 'hipertrofia' ? 'selected' : ''}>Sarcopenia: Foco Miofibrilar</option>
+                            <option value="perda_gordura" ${p.objective === 'perda_gordura' ? 'selected' : ''}>Reversão DAEM: Secar Visceral</option>
+                        </select>
+                    </div>
+                    <div class="card-bold border-l-4 border-red-500 bg-red-950/20">
+                        <label class="label-bold text-red-400 mb-2 block" for="p_inj">Risco Articular</label>
+                        <select id="p_inj" class="bg-zinc-900 border-zinc-800 text-white font-bold uppercase italic">
+                            <option value="false" ${!p.has_injury ? 'selected' : ''}>Articulações Saudáveis</option>
+                            <option value="true" ${p.has_injury ? 'selected' : ''}>⚠️ Ativar Protocolo BFR (Lesão)</option>
+                        </select>
+                        <p class="text-[10px] text-zinc-500 mt-2 font-bold uppercase">Nota: Ativação de métodos BFR para proteção articular.</p>
+                    </div>
+                    <button type="submit" class="w-full btn-bold py-5 text-lg">
+                        ATUALIZAR DADOS CLÍNICOS
+                    </button>
+                    
+                    <button type="button" onclick="sb.auth.signOut()" class="w-full border border-zinc-700 text-zinc-500 py-3 font-display text-[10px] uppercase tracking-widest hover:border-red-500 hover:text-red-500 transition-all">Encerrar Sessão</button>
+                </form>
+            `;
+        }
+
+        async function saveProfileData() {
+            const name = document.getElementById('p_name').value.trim();
+            const age = Number(document.getElementById('p_age').value);
+            const weight = Number(document.getElementById('p_weight').value);
+            const level = document.getElementById('p_level').value;
+            const objective = document.getElementById('p_obj').value;
+            const has_injury = document.getElementById('p_inj').value === 'true';
+
+            // Validation
+            if (!name || name.length < 2) {
+                showInputError('p_name', 'Nome deve ter pelo menos 2 caracteres');
+                return;
+            }
+            if (!age || age < 18 || age > 120) {
+                showInputError('p_age', 'Idade deve estar entre 18 e 120');
+                return;
+            }
+
+            const data = { name, age, weight, level, objective, has_injury };
+            profile = { ...profile, ...data };
+
+            try {
+                const { error } = await sb.from('profiles').upsert({
+                    id: user.id,
+                    ...data,
+                    updated_at: new Date().toISOString()
+                });
+                
+                if (error) throw error;
+                
+                showToast('Prontuário salvo com sucesso!', 'success');
+                renderHome();
+            } catch (e) {
+                showToast('Erro ao salvar: ' + e.message, 'error');
+            }
+        }
+
+        function renderProgram() {
+            const el = document.getElementById('programa-content');
+            if (!activeProgram || !activeProgram.program_data) {
+                el.innerHTML = `
+                    <div class="text-center py-20">
+                        <h3 class="bold-title text-3xl text-white mb-2 uppercase">Protocolo Inativo</h3>
+                        <p class="label-bold mb-8 italic">Solicite seu plano semanal ao coach IA.</p>
+                        <button onclick="promptProgram()" class="btn-bold px-10 py-5">
+                            ✨ GERAR MEU PLANO
+                        </button>
+                    </div>`;
+                return;
+            }
+            
+            const prog = activeProgram.program_data;
+            const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+            const todayName = dayNames[new Date().getDay()];
+
+            const daysHtml = prog.days.map(day => {
+                const isToday = day.day === todayName || day.day.startsWith(todayName.slice(0, 3));
+                const exHtml = day.exercises.map((e, idx) => buildExerciseCard(e, idx)).join('');
+
+                return `
+                    <div class="card-bold mb-6 overflow-hidden ${isToday ? 'border-l-8 border-primary' : 'border-zinc-800'}">
+                        <div class="flex justify-between items-center mb-6">
+                            <div>
+                                ${isToday ? '<span class="label-bold text-primary animate-pulse tracking-[4px]">Sessão de Hoje</span>' : ''}
+                                <h4 class="bold-title text-4xl text-white mt-1">${escapeHtml(day.day)}</h4>
+                                <p class="text-zinc-500 font-display font-black text-xs uppercase tracking-tight">${escapeHtml(day.focus)}</p>
+                            </div>
+                            <button onclick="showCheckinModal('${escapeHtml(day.day)} - ${escapeHtml(day.focus)}')" class="btn-bold px-4 py-2 text-[10px]">PUNCHIN</button>
+                        </div>
+                        <div class="space-y-4">${exHtml}</div>
+                    </div>`;
+            }).join('');
+
+            const notesHtml = prog.notes && prog.notes.length ? `
+                <div class="card-bold mb-6 border-zinc-700 opacity-60">
+                    <h4 class="label-bold mb-4">Notas do Coach</h4>
+                    ${prog.notes.map(n => `<p class="text-zinc-400 text-xs mb-2 leading-relaxed uppercase font-bold tracking-tight">• ${escapeHtml(n)}</p>`).join('')}
+                </div>` : '';
+
+            el.innerHTML = `
+                <div class="flex justify-between items-center mb-10 pb-4 border-b-2 border-zinc-800">
+                    <div>
+                        <h2 class="bold-title text-4xl text-white">${escapeHtml(prog.name)}</h2>
+                        <p class="label-bold">DURAÇÃO: 5 SESSÕES / SEMANA</p>
+                    </div>
+                    <button onclick="promptAnalysis()" class="border border-primary text-primary font-display font-black text-[10px] px-3 py-2 uppercase hover:bg-primary hover:text-dark transition-all">Análise IA</button>
+                </div>
+                ${daysHtml}
+                ${notesHtml}
+                <button onclick="promptProgram()" class="w-full border-2 border-zinc-800 text-zinc-600 font-display font-black py-4 uppercase text-[10px] tracking-widest hover:border-white hover:text-white transition-all mb-10">
+                    RECALIBRAR PROTOCOLO ♻️
+                </button>`;
+        }
+
+        function renderHistory() {
+            document.getElementById('history-total').textContent = workouts.length;
+            document.getElementById('history-list').innerHTML = workouts.length === 0
+                ? '<div class="card-bold p-12 text-center border-dashed opacity-40 italic uppercase text-[10px] tracking-widest">NENHUMA SESSÃO REGISTRADA</div>'
+                : workouts.map(w => {
+                    const data = new Date(w.created_at).toLocaleDateString('pt-BR');
+                    return `
+                    <div class="card-bold cursor-pointer hover:border-primary transition-all mb-2 group" onclick="showWorkoutDetail('${w.id}')">
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <h4 class="bold-title text-xl text-white group-hover:text-primary transition-colors">${escapeHtml(w.workout_data.name || 'Sessão')}</h4>
+                                <p class="label-bold">${data}</p>
+                            </div>
+                            <div class="text-right">
+                                ${w.completed
+                                ? '<div class="bg-primary text-dark font-display font-black text-[10px] px-3 py-1 uppercase">BATIDO</div>'
+                                : '<div class="border border-zinc-700 text-zinc-500 font-display font-black text-[10px] px-3 py-1 uppercase tracking-widest">OPEN</div>'}
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex items-center gap-2">
+                                <span class="label-bold">VOL:</span>
+                                <span class="text-white font-bold text-xs uppercase tracking-tight">${w.workout_data.exercises?.length || 0} EXERCÍCIOS</span>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+        }
+
+        // ================================================================
+        // MOTOR DE IA
+        // ================================================================
+        function prompt(t) {
+            document.getElementById('chat-input').value = t;
+            send();
+        }
+
+        async function send() {
+            if (!isOnline) {
+                showToast('Você está offline. Conecte-se para usar a IA.', 'warning');
+                return;
+            }
+
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            input.value = '';
+            addChatMsg('user', msg);
+            showTyping();
+
+            try {
+                const responseContent = await callAI(msg);
+
+                setTimeout(async () => {
+                    hideTyping();
+                    if (responseContent.text) addChatMsg('ai', responseContent.text.replace(/\n/g, '<br>'));
+                    if (responseContent.isProgram && responseContent.program) {
+                        await saveProgramAndRender(responseContent.program, responseContent.programUpdate);
+                    } else if (responseContent.isWorkout && responseContent.workout) {
+                        renderWorkoutInChat(responseContent.workout);
+                    }
+                }, 800);
+
+            } catch (err) {
+                hideTyping();
+                addChatMsg('ai', 'Falha na conexão de inteligência. Verifique sua conexão ou tente novamente.');
+                showToast('Erro ao conectar com a IA', 'error');
+                console.error(err);
+            }
+        }
+
+        async function saveProgramAndRender(programData, isUpdate) {
+            try {
+                if (activeProgram) {
+                    await sb.from('programs').update({ active: false }).eq('id', activeProgram.id);
+                }
+                const { data: saved } = await sb.from('programs').insert({
+                    user_id: user.id,
+                    program_data: programData,
+                    active: true
+                }).select().single();
+                activeProgram = saved;
+                showToast(isUpdate ? 'Programa atualizado!' : 'Novo programa salvo!', 'success');
+            } catch (e) {
+                console.error('Erro ao salvar programa:', e);
+                showToast('Erro ao salvar programa', 'error');
+            }
+            renderProgramInChat(programData, isUpdate);
+            renderHome();
+        }
+
+        async function callAI(promptText) {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prompt: promptText,
+                    userProfile: profile,
+                    currentProgram: activeProgram ? activeProgram.program_data : null,
+                    recentCheckins: recentCheckins.slice(0, 10)
+                })
+            });
+            if (!response.ok) throw new Error(`Erro na API: ${response.status}`);
+            return await response.json();
+        }
+
+        function addChatMsg(type, html) {
+            const c = document.getElementById('chat-messages');
+            const d = document.createElement('div');
+            d.className = `chat-msg chat-${type}`;
+            d.innerHTML = html;
+            c.appendChild(d);
+            c.scrollTop = c.scrollHeight;
+            
+            if (type === 'ai' && voiceModeActive && window.speechSynthesis) {
+                // Remove program cards and raw HTML to speak only text
+                let cleanText = d.innerText || "";
+                cleanText = cleanText.replace(/GERAR CARTÃO DE TREINO/g, '').replace(/PROGRAMA DE TREINO.*/g, '').trim();
+                if (cleanText.length > 5) speakMessage(cleanText);
+            }
+        }
+
+        function showTyping() {
+            const c = document.getElementById('chat-messages');
+            const d = document.createElement('div');
+            d.id = 'typing';
+            d.className = 'chat-msg chat-ai px-4 py-3 w-fit';
+            d.innerHTML = '<div class="typing flex"><span></span><span></span><span></span></div>';
+            c.appendChild(d);
+            c.scrollTop = c.scrollHeight;
+        }
+
+        function hideTyping() {
+            const d = document.getElementById('typing');
+            if (d) d.remove();
+        }
+
+        // ================================================================
+        // SHARED EXERCISE CARD BUILDER
+        // ================================================================
+        function buildExerciseCard(e, idx) {
+            const cid = 'ex-' + Math.random().toString(36).slice(2, 8);
+            const descHtml = (e.desc || []).map((s, i) =>
+                `<div class="flex gap-2 mb-1.5"><span class="text-primary font-black text-[11px] flex-shrink-0 w-4">${i + 1}.</span><span class="text-white text-[12px] leading-snug">${escapeHtml(s)}</span></div>`
+            ).join('');
+            const mistakesHtml = (e.mistakes || []).map(m =>
+                `<div class="flex gap-2 mb-1"><span class="text-red-400 flex-shrink-0 text-[11px]">✗</span><span class="text-zinc-500 text-[11px] leading-snug">${escapeHtml(m)}</span></div>`
+            ).join('');
+            const hasDetails = descHtml || mistakesHtml || e.video_url;
+            
+            return `
+                <div class="card-bold mb-4">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex-1 pr-2">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="bg-primary text-dark text-[10px] font-display font-black px-2 py-0.5 uppercase tracking-tighter">EX ${idx + 1}</span>
+                                ${e.bfr ? '<span class="bfr-tag">MÉTODO BFR</span>' : ''}
+                            </div>
+                            <h4 class="bold-title text-2xl text-white mb-1 tracking-tight">${escapeHtml(e.n)}</h4>
+                            <p class="label-bold">${escapeHtml(e.muscles || '-')}</p>
+                        </div>
+                        <div class="text-right">
+                             <div class="text-3xl font-display font-black text-primary leading-none uppercase">${e.sets}X${e.reps}</div>
+                             <div class="label-bold mt-1">REST: ${e.t}S</div>
+                        </div>
+                    </div>
+                    ${hasDetails ? `
+                        <button onclick="toggleEx('${cid}')" id="${cid}-btn" class="w-full border border-zinc-700 py-3 text-[10px] font-display font-black uppercase text-zinc-400 hover:text-white hover:border-white transition-all">
+                            CONTAGEM & PROTOCOLO ▼
+                        </button>
+                        <div id="${cid}" class="hidden mt-4 pt-4 border-t border-zinc-800 space-y-4">
+                            ${descHtml ? `<div><p class="label-bold mb-2">Execução Técnica</p>${descHtml}</div>` : ''}
+                            ${mistakesHtml ? `<div><p class="label-bold mb-2">Pontos Críticos</p>${mistakesHtml}</div>` : ''}
+                            ${e.video_url ? `<a href="${e.video_url}" target="_blank" rel="noopener noreferrer" class="block w-full bg-zinc-800 text-white text-[10px] font-display font-black py-4 text-center uppercase border border-zinc-700">Assistir Demonstração</a>` : ''}
+                        </div>` : ''}
+                </div>`;
+        }
+
+        function toggleEx(cid) {
+            const el = document.getElementById(cid);
+            const btn = document.getElementById(cid + '-btn');
+            if (!el) return;
+            const hidden = el.classList.toggle('hidden');
+            if (btn) btn.textContent = hidden ? '▼ Ver execução' : '▲ Fechar';
+        }
+
+        function renderWorkoutInChat(w) {
+            w.id = w.id || crypto.randomUUID();
+            const c = document.getElementById('chat-messages');
+            const d = document.createElement('div');
+            d.className = 'chat-msg chat-ai p-0 overflow-hidden w-full max-w-[100%]';
+            const exHtml = (w.exercises || []).map((e, i) => buildExerciseCard(e, i)).join('');
+            d.innerHTML = `
+                <div class="bg-slate-900 p-4 border-b border-primary/20">
+                    <h4 class="font-black text-white text-[15px]">${escapeHtml(w.name)}</h4>
+                    <span class="text-xs text-slate-400">${(w.exercises || []).length} exercícios</span>
+                </div>
+                <div class="p-3 bg-[#0f172a]">${exHtml}</div>
+                <button onclick="saveAndConfirmChat(this, '${encodeURIComponent(JSON.stringify(w))}')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white p-4 font-black uppercase text-xs">
+                    ✅ Registrar este Protocolo
+                </button>`;
+            c.appendChild(d);
+            c.scrollTop = c.scrollHeight;
+        }
+
+        function renderProgramInChat(prog, isUpdate) {
+            const c = document.getElementById('chat-messages');
+            const d = document.createElement('div');
+            d.className = 'chat-msg chat-ai p-0 overflow-hidden w-full max-w-[100%]';
+
+            const daysHtml = prog.days.map(day => `
+                <div class="border-b border-slate-700/50 last:border-0">
+                    <div class="flex items-center gap-3 p-3 bg-slate-800/60">
+                        <div class="w-2 h-2 bg-primary rounded-full flex-shrink-0"></div>
+                        <div>
+                            <span class="font-bold text-white text-[13px]">${escapeHtml(day.day)}</span>
+                            <span class="text-slate-400 text-[11px] ml-2">${escapeHtml(day.focus)}</span>
+                        </div>
+                        <span class="ml-auto text-[10px] text-slate-500 font-medium">${day.exercises.length} ex.</span>
+                    </div>
+                </div>`).join('');
+
+            d.innerHTML = `
+                <div class="bg-gradient-to-r from-slate-900 to-primary/10 p-4 border-b border-primary/30">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-primary text-xs font-bold uppercase tracking-widest">${isUpdate ? '♻️ Programa Atualizado' : '🗓️ Programa Semanal'}</span>
+                    </div>
+                    <h4 class="font-black text-white text-[15px]">${escapeHtml(prog.name)}</h4>
+                </div>
+                <div class="bg-[#0f172a]">${daysHtml}</div>
+                ${prog.notes && prog.notes.length ? `<div class="p-3 bg-slate-900/50 border-t border-slate-700/50">${prog.notes.map(n => `<p class="text-[11px] text-slate-400 mb-1">• ${escapeHtml(n)}</p>`).join('')}</div>` : ''}
+                <button onclick="showPage('programa', null)" class="w-full bg-primary hover:bg-blue-500 text-white p-4 font-black uppercase text-xs transition-colors">
+                    📋 Ver Programa Completo
+                </button>`;
+            c.appendChild(d);
+            c.scrollTop = c.scrollHeight;
+        }
+
+        async function saveAndConfirmChat(btn, workoutStr) {
+            const data = JSON.parse(decodeURIComponent(workoutStr));
+            const newRecord = {
+                id: crypto.randomUUID(),
+                workout_data: data,
+                completed: false,
+                created_at: new Date().toISOString()
+            };
+
+            try {
+                const res = await sb.from('workout_history').insert({
+                    user_id: user.id,
+                    workout_data: data,
+                    created_at: new Date().toISOString()
+                }).select().single();
+                workouts.unshift(res.data ? res.data : newRecord);
+                btn.outerHTML = '<div class="bg-emerald-900/50 text-emerald-400 p-3 text-center text-xs font-bold uppercase tracking-wider">Salvo na Nuvem ✅</div>';
+                showToast('Treino salvo com sucesso!', 'success');
+                renderHistory();
+            } catch (e) {
+                showToast('Erro ao salvar treino', 'error');
+            }
+        }
+
+        function showWorkoutDetail(id) {
+            const w = workouts.find(x => x.id === id);
+            const d = w.workout_data;
+            const exHtml = (d.exercises || []).map((e, i) => buildExerciseCard(e, i)).join('');
+            const content = `
+                <div class="pb-4">
+                    <p class="text-xs text-slate-500 mb-3">${(d.exercises || []).length} exercícios${d.duration ? ' · ' + d.duration + 'min' : ''}</p>
+                    ${exHtml}
+                    ${!w.completed
+                        ? `<button onclick="confirmWorkoutCompletion('${id}')" class="w-full bg-emerald-600 text-white hover:bg-emerald-500 py-4 mt-4 rounded-2xl font-black uppercase tracking-widest text-sm shadow-[0_0_15px_rgba(5,150,105,0.4)]">✅ Marcar Concluído</button>`
+                        : `<div class="bg-emerald-900/30 text-emerald-400 font-bold p-4 text-center rounded-xl border border-emerald-500/20 uppercase tracking-widest mt-4">✓ Sessão Batida</div>`}
+                </div>`;
+            openModal(d.name || 'Treino Detalhado', content);
+        }
+
+        async function confirmWorkoutCompletion(id) {
+            const w = workouts.find(x => x.id === id);
+            w.completed = true;
+            await sb.from('workout_history').update({
+                completed: true,
+                completed_at: new Date().toISOString()
+            }).eq('id', id);
+            closeModal();
+            renderHistory();
+            renderHome();
+            showToast('Treino marcado como concluído!', 'success');
+        }
+
+        function showCheckinModal(dayKey) {
+            const content = `
+                <div class="space-y-5 pb-2">
+                    <p class="text-sm text-slate-400 -mt-1">Registre como foi o treino de <strong class="text-white">${escapeHtml(dayKey)}</strong></p>
+
+                    <div>
+                        <label class="text-xs text-slate-400 font-bold uppercase ml-1 mb-2 block" for="ci-fatigue">Fadiga Percebida: <span id="fatigue-val" class="text-primary">5</span>/10</label>
+                        <input type="range" id="ci-fatigue" min="1" max="10" value="5" oninput="document.getElementById('fatigue-val').textContent=this.value" style="background: rgba(30,41,59,0.6) !important; padding: 8px 4px !important; border-radius: 8px !important; cursor: pointer;">
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-slate-400 font-bold uppercase ml-1 mb-2 block" for="ci-rpe">RPE — Esforço: <span id="rpe-val" class="text-accent">5</span>/10</label>
+                        <input type="range" id="ci-rpe" min="1" max="10" value="5" oninput="document.getElementById('rpe-val').textContent=this.value" style="background: rgba(30,41,59,0.6) !important; padding: 8px 4px !important; border-radius: 8px !important; cursor: pointer;">
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-slate-400 font-bold uppercase ml-1 mb-1 block" for="ci-weight">Peso Atual (kg)</label>
+                        <input type="number" id="ci-weight" placeholder="Ex: 88.5" value="${profile.weight || ''}" min="30" max="300" step="0.1">
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-slate-400 font-bold uppercase ml-1 mb-1 block" for="ci-notes">Observações</label>
+                        <textarea id="ci-notes" placeholder="Como foi o treino? Alguma dor ou superação?" rows="3" style="background: rgba(30,41,59,0.6) !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 14px !important; padding: 14px 18px !important; color: white !important; width: 100%; box-sizing: border-box; font-size: 15px !important; resize: none; outline: none; font-family: inherit;"></textarea>
+                    </div>
+
+                    <button onclick="saveCheckin('${escapeHtml(dayKey.replace(/'/g, "\\'"))}')" class="w-full bg-gradient-to-r from-primary to-accent py-4 rounded-2xl font-black uppercase tracking-wider text-sm shadow-lg mt-2">
+                        Salvar Check-in
+                    </button>
+                </div>`;
+            openModal('Check-in de Treino', content);
+        }
+
+        async function saveCheckin(dayKey) {
+            const fatigue = parseInt(document.getElementById('ci-fatigue').value);
+            const rpe = parseInt(document.getElementById('ci-rpe').value);
+            const weight = parseFloat(document.getElementById('ci-weight').value) || null;
+            const notes = document.getElementById('ci-notes').value.trim();
+
+            try {
+                const { error } = await sb.from('checkins').insert({
+                    user_id: user.id,
+                    program_id: activeProgram ? activeProgram.id : null,
+                    day_key: dayKey,
+                    fatigue, rpe, weight, notes
+                });
+                if (error) throw error;
+                
+                recentCheckins.unshift({
+                    day_key: dayKey,
+                    fatigue, rpe, weight, notes,
+                    created_at: new Date().toISOString()
+                });
+                closeModal();
+                renderHome();
+                renderProgram();
+                showToast('Check-in registrado!', 'success');
+                setTimeout(() => addChatMsg('ai', 'Check-in registrado! Obrigado pelo feedback — usarei esses dados para ajustar seu programa conforme necessário. 💪'), 300);
+            } catch (e) {
+                showToast('Erro ao salvar check-in: ' + e.message, 'error');
+            }
+        }
+
+        // ================================================================
+        // MODAL SYSTEM
+        // ================================================================
+        const modalEl = document.getElementById('modal');
+        const modalWrapper = document.getElementById('modal-content-wrapper');
+
+        function openModal(t, html) {
+            document.getElementById('modal-title').textContent = t;
+            document.getElementById('modal-body').innerHTML = html;
+            modalEl.classList.remove('hidden');
+            modalEl.classList.remove('hidden');
+            modalEl.style.display = 'flex';
+            setTimeout(() => {
+                modalEl.classList.remove('opacity-0');
+                modalWrapper.classList.remove('translate-y-full');
+            }, 10);
+        }
+
+        function closeModal() {
+            modalEl.classList.add('opacity-0');
+            modalWrapper.classList.add('translate-y-full');
+            setTimeout(() => {
+                modalEl.classList.add('hidden');
+                modalEl.style.display = 'none';
+            }, 300);
+        }
+
+        // Close modal on backdrop click
+        modalEl.addEventListener('click', (e) => {
+            if (e.target === modalEl) {
+                closeModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !modalEl.classList.contains('hidden')) {
+                closeModal();
+            }
+        });
+
+        // ================================================================
+        // COMPUTER VISION (BIOMECHANICS) & VBT LOGIC
+        // ================================================================
+        let visionStream = null;
+        let visionInterval = null;
+        let warmupInterval = null;
+        
+        async function initWebcam() {
+            const video = document.getElementById('webcam-video');
+            const hud = document.getElementById('vision-hud');
+            const status = document.getElementById('camera-status');
+            if (visionStream) return true;
+            try {
+                visionStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+                video.srcObject = visionStream;
+                video.classList.remove('hidden');
+                status.classList.add('hidden');
+                hud.classList.remove('hidden');
+                return true;
+            } catch (err) {
+                alert("Erro ao acessar câmera: " + err.message);
+                return false;
+            }
+        }
+
+        async function startVisionAI() {
+            if (visionInterval) clearInterval(visionInterval);
+            if (warmupInterval) clearInterval(warmupInterval);
+            document.getElementById('warmup-overlay').classList.add('hidden');
+            
+            if (!(await initWebcam())) return;
+            
+            // Simulate Vision Data Feed
+            let phases = ['Concentric', 'Eccentric'];
+            visionInterval = setInterval(() => {
+                const rPhase = phases[Math.floor(Math.random() * phases.length)];
+                const angle = Math.floor(Math.random() * 90) + 45;
+                const tut = (Math.random() * 2 + 1).toFixed(1);
+                document.getElementById('vision-tution').textContent = `Angle: ${angle}° | TUT: ${tut}s`;
+                
+                if (rPhase === 'Eccentric' && tut < 2.0) {
+                    document.getElementById('vision-feedback').textContent = "🚨 ALERTA VBT: DESÇA MAIS LENTO (CADÊNCIA ERRONÊA)";
+                    speakMessage("Atenção, freie a descida. Tensão mecânica sendo perdida.");
+                } else if (angle < 60) {
+                    document.getElementById('vision-feedback').textContent = "⚠️ POSTURA: PEITO CAINDO, ABRA AS ESCÁPULAS";
+                    speakMessage("Postura. Abra o peito e puxe as escápulas.");
+                } else {
+                    document.getElementById('vision-feedback').textContent = `⚡ FASE ${rPhase.toUpperCase()} ESTÁVEL`;
+                }
+            }, 3000);
+            
+            speakMessage("Sensor neural ativado. Mapeando 33 pontos articulares em modo livre.");
+        }
+
+        async function startWarmupSequence() {
+            if (visionInterval) clearInterval(visionInterval);
+            if (warmupInterval) clearInterval(warmupInterval);
+            
+            if (!(await initWebcam())) return;
+            
+            const overlay = document.getElementById('warmup-overlay');
+            const titleEl = document.getElementById('warmup-title');
+            const descEl = document.getElementById('warmup-desc');
+            const progressEl = document.getElementById('warmup-progress');
+            const feedbackEl = document.getElementById('vision-feedback');
+            
+            overlay.classList.remove('hidden');
+            
+            const stages = [
+                { title: "Rotação de Braços (Arm Circles)", desc: "Círculos amplos para oxigenar a articulação glenoumeral.", duration: 15, phrases: ["Amplitude perfeita. Mantenha os ombros relaxados.", "Isso, vá ativando a musculatura térmica.", "Excelente estabilidade de cervical."] },
+                { title: "Torção de Tronco (Torso Twists)", desc: "Gire suavemente ativando os oblíquos, preservando a lombar.", duration: 15, phrases: ["Acompanhe o movimento com o olhar.", "Pelve estável. Gire apenas o pilar torácico.", "Excelente alinhamento, prepare seu core."] },
+                { title: "Pêndulo de Perna (Leg Swings)", desc: "Destrave o quadril fazendo pêndulos. Apoie-se se necessário.", duration: 15, phrases: ["Abra a postura, chute com ritmo constante.", "Evite flexionar a coluna durante o balanço.", "Aquecimento estrutural finalizado. Muito bem."] }
+            ];
+            
+            let currentStage = 0;
+            
+            async function runStage(index) {
+                if(index >= stages.length) {
+                    speakMessage("Aquecimento guiado concluído. Seu chassi está perfeitamente calibrado e lubrificado. Pronto para esmagar fibras.");
+                    feedbackEl.textContent = "✅ AQUECIMENTO SEGURO FINALIZADO";
+                    setTimeout(stopVisionAI, 4000);
+                    return;
+                }
+                const stage = stages[index];
+                titleEl.textContent = `Passo ${index + 1}: ${stage.title}`;
+                descEl.textContent = stage.desc;
+                progressEl.style.width = '0%';
+                feedbackEl.textContent = `🟢 INICIANDO: ${stage.title.toUpperCase()}`;
+                speakMessage(`Passo ${index + 1}. ${stage.title}. ${stage.desc}. Valendo.`);
+                
+                let seconds = 0;
+                let feedbackIndex = 0;
+                
+                warmupInterval = setInterval(() => {
+                    seconds++;
+                    progressEl.style.width = `${(seconds / stage.duration) * 100}%`;
+                    
+                    if(seconds % 5 === 0 && feedbackIndex < stage.phrases.length) {
+                        const phrase = stage.phrases[feedbackIndex];
+                        feedbackEl.textContent = `👁️ VISÃO IA: ${phrase.toUpperCase()}`;
+                        speakMessage(phrase);
+                        feedbackIndex++;
+                    }
+                    
+                    if(seconds >= stage.duration) {
+                        clearInterval(warmupInterval);
+                        runStage(index + 1);
+                    }
+                }, 1000);
+            }
+            
+            runStage(0);
+        }
+        
+        function stopVisionAI() {
+            const video = document.getElementById('webcam-video');
+            const hud = document.getElementById('vision-hud');
+            const status = document.getElementById('camera-status');
+            
+            if (visionStream) {
+                visionStream.getTracks().forEach(track => track.stop());
+                visionStream = null;
+            }
+            if (visionInterval) clearInterval(visionInterval);
+            if (warmupInterval) clearInterval(warmupInterval);
+            
+            document.getElementById('warmup-overlay').classList.add('hidden');
+            video.classList.add('hidden');
+            hud.classList.add('hidden');
+            status.classList.remove('hidden');
+            speakMessage("Sensor neural desativado.");
+        }
+
+        // ================================================================
+        // VOICE / HANDS FREE MODE
+        // ================================================================
+        let voiceModeActive = false;
+        let recognition = null;
+        
+        function toggleVoiceTarget() {
+            const btn = document.getElementById('btn-voice-mode');
+            if (voiceModeActive) {
+                voiceModeActive = false;
+                btn.classList.remove('bg-primary', 'text-dark', 'border-primary');
+                btn.classList.add('bg-zinc-900', 'text-white', 'border-zinc-700');
+                if (recognition) recognition.stop();
+                showToast("Modo Hands-Free Desativado", "warning");
+            } else {
+                voiceModeActive = true;
+                btn.classList.remove('bg-zinc-900', 'text-white', 'border-zinc-700');
+                btn.classList.add('bg-primary', 'text-dark', 'border-primary');
+                showToast("Modo Hands-Free Ativado. Escutando...", "success");
+                initSpeechRecognition();
+            }
+        }
+        
+        function initSpeechRecognition() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                showToast("Seu navegador não suporta reconhecimento de voz nativo.", "error");
+                toggleVoiceTarget();
+                return;
+            }
+            
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRec();
+            recognition.lang = 'pt-BR';
+            recognition.continuous = true;
+            recognition.interimResults = false;
+            
+            recognition.onresult = (event) => {
+                const command = event.results[event.results.length - 1][0].transcript.toLowerCase();
+                console.log("[VOICE] Ouviu:", command);
+                document.getElementById('chat-input').value = command;
+                send();
+            };
+            
+            recognition.onerror = (event) => {
+                console.error("[VOICE] Error:", event.error);
+            };
+            
+            recognition.onend = () => {
+                if (voiceModeActive) {
+                    recognition.start(); // Auto-restart if mode is active
+                }
+            };
+            
+            recognition.start();
+            speakMessage("Modo assistente virtual ativo. O que você precisa treinar hoje?");
+        }
+        
+        function speakMessage(text) {
+            if (!('speechSynthesis' in window)) return;
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'pt-BR';
+            msg.pitch = 0.9; // Slightly lower pitch for 'Elite Coach' vibe
+            msg.rate = 1.05;
+            window.speechSynthesis.speak(msg);
+        }
+
+        // ================================================================
+        // URL PARAMS (Deep Links)
+        // ================================================================
+        const urlParams = new URLSearchParams(window.location.search);
+        const pageParam = urlParams.get('page');
+        if (pageParam) {
+            // Will be handled after auth
+            sessionStorage.setItem('redirectPage', pageParam);
+        }
+    </script>
+</body>
+
+</html>
