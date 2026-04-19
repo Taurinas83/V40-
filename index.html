@@ -456,14 +456,19 @@
     <!-- Setup Screen (Auth) -->
     <div
       id="auth-screen"
-      class="fixed inset-0 bg-dark flex flex-col items-center p-6 z-50 overflow-y-auto pt-16"
+      class="fixed inset-0 flex flex-col items-center justify-center p-6 z-50 overflow-y-auto"
     >
-      <div class="absolute inset-0 bg-dark opacity-10"></div>
+      <div 
+        class="absolute inset-0 bg-cover bg-center"
+        style="background-image: url('https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=1080&q=80');"
+      ></div>
+      <div class="absolute inset-0 bg-black/85 backdrop-blur-[2px]"></div>
+
       <div
-        class="card-bold w-full max-w-sm space-y-6 text-center relative z-10 mx-auto"
+        class="card-bold w-full max-w-sm space-y-6 text-center relative z-10 mx-auto bg-dark/80 border-primary/20 shadow-2xl"
       >
         <div
-          class="w-20 h-20 bg-primary mx-auto flex items-center justify-center shadow-[0_0_0_4px_#181818,0_0_0_5px_#CDFF00] mb-2"
+          class="w-20 h-20 bg-primary mx-auto flex items-center justify-center shadow-[0_0_0_2px_#18181A,0_0_0_4px_#CDFF00] mb-2"
         >
           <span
             class="text-4xl text-dark font-display font-black tracking-tighter"
@@ -472,18 +477,18 @@
         </div>
         <div class="px-2">
           <h1
-            class="text-[clamp(2.5rem,13vw,4rem)] leading-none bold-title text-primary break-words whitespace-nowrap overflow-hidden text-clip w-full"
+            class="text-[clamp(1.8rem,11vw,3.5rem)] leading-none bold-title text-primary tracking-tight w-full"
           >
             VITALIDADE
           </h1>
           <p
-            class="text-white font-bold text-[10px] tracking-[4px] uppercase mt-4"
+            class="text-white font-bold text-[10px] tracking-[4px] uppercase mt-3"
           >
             Personal IA Premium
           </p>
         </div>
 
-        <div id="auth-forms" class="space-y-4 pt-6 border-t border-white/5">
+        <div id="auth-forms" class="space-y-4 pt-6 border-t border-white/10">
           <p class="label-bold text-center">Inicie sua jornada</p>
           <div class="space-y-3">
             <input
@@ -1612,9 +1617,32 @@
                 </div>
                 ${daysHtml}
                 ${notesHtml}
-                <button onclick="promptProgram()" class="w-full border-2 border-zinc-800 text-zinc-600 font-display font-black py-4 uppercase text-[10px] tracking-widest hover:border-white hover:text-white transition-all mb-10">
-                    RECALIBRAR PROTOCOLO ♻️
-                </button>`;
+                <div class="flex gap-2">
+                  <button onclick="deleteCurrentProgram()" class="flex-1 w-full border border-red-900/50 text-red-500 font-display font-black py-4 uppercase text-[10px] tracking-widest hover:bg-red-900 hover:text-white transition-all mb-10">
+                      EXCLUIR PROTOCOLO 🗑️
+                  </button>
+                  <button onclick="promptProgram()" class="flex-1 w-full border border-zinc-800 text-zinc-500 font-display font-black py-4 uppercase text-[10px] tracking-widest hover:bg-zinc-800 hover:text-white transition-all mb-10">
+                      RECALIBRAR ♻️
+                  </button>
+                </div>`;
+      }
+
+      async function deleteCurrentProgram() {
+        if (!activeProgram) return;
+        const confirmDelete = confirm("Tem certeza que deseja apagar o treino atual? Essa ação não pode ser desfeita.");
+        if (!confirmDelete) return;
+
+        try {
+          // Delete from db entirely to keep account clean
+          await sb.from("programs").delete().eq("id", activeProgram.id);
+          activeProgram = null;
+          showToast("Treino excluído.", "success");
+          renderHome();
+          renderProgram();
+        } catch(e) {
+          showToast("Erro ao deletar protocolo.", "error");
+          console.error(e);
+        }
       }
 
       function renderHistory() {
@@ -1628,18 +1656,21 @@
                     "pt-BR",
                   );
                   return `
-                    <div class="card-bold cursor-pointer hover:border-primary transition-all mb-2 group" onclick="showWorkoutDetail('${w.id}')">
-                        <div class="flex justify-between items-center mb-4">
-                            <div>
+                    <div class="card-bold cursor-pointer hover:border-primary transition-all mb-2 group relative" onclick="showWorkoutDetail('${w.id}')">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="pr-8">
                                 <h4 class="bold-title text-xl text-white group-hover:text-primary transition-colors">${escapeHtml(w.workout_data.name || "Sessão")}</h4>
                                 <p class="label-bold">${data}</p>
                             </div>
-                            <div class="text-right">
+                            <div class="text-right flex flex-col items-end gap-2">
                                 ${
                                   w.completed
                                     ? '<div class="bg-primary text-dark font-display font-black text-[10px] px-3 py-1 uppercase">BATIDO</div>'
                                     : '<div class="border border-zinc-700 text-zinc-500 font-display font-black text-[10px] px-3 py-1 uppercase tracking-widest">OPEN</div>'
                                 }
+                                <button onclick="deleteWorkoutHistory('${w.id}', event)" class="text-zinc-500 hover:text-red-500 transition-colors bg-zinc-900 border border-zinc-800 p-2 rounded relative z-10" title="Apagar Sessão">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
                             </div>
                         </div>
                         <div class="flex gap-4">
@@ -1651,6 +1682,25 @@
                     </div>`;
                 })
                 .join("");
+      }
+
+      async function deleteWorkoutHistory(id, event) {
+        event.stopPropagation(); // Evita abrir o modal do treino
+        const confirmed = confirm("Tem certeza que deseja apagar esta sessão do histórico permanentemente?");
+        if (!confirmed) return;
+
+        try {
+          const { error } = await sb.from("workout_history").delete().eq("id", id);
+          if (error) throw error;
+          
+          workouts = workouts.filter(w => w.id !== id);
+          renderHistory();
+          renderHome(); // Updates the total session counter on home page
+          showToast("Sessão apagada com sucesso.", "success");
+        } catch (e) {
+          console.error("Error deleting workout:", e);
+          showToast("Erro ao apagar sessão: " + e.message, "error");
+        }
       }
 
       // ================================================================
@@ -2146,24 +2196,39 @@
 
               if (results.poseLandmarks) {
                 // Posture analysis
-                const leftShoulder = results.poseLandmarks[11];
-                const rightShoulder = results.poseLandmarks[12];
-                const leftHip = results.poseLandmarks[23];
-                const rightHip = results.poseLandmarks[24];
+                const ls = results.poseLandmarks[11]; // Left Shoulder
+                const rs = results.poseLandmarks[12]; // Right Shoulder
+                const lh = results.poseLandmarks[23]; // Left Hip
+                const rh = results.poseLandmarks[24]; // Right Hip
                 
                 let isGoodPosture = true;
-                if (leftShoulder && rightShoulder && leftHip && rightHip) {
-                    const shoulderDiff = Math.abs(leftShoulder.y - rightShoulder.y);
-                    // Minimal logic for demo: if shoulders are very uneven, alert red.
-                    if (shoulderDiff > 0.1) isGoodPosture = false;
+                let spineStress = 0;
+                
+                if (ls && rs && lh && rh) {
+                    const shoulderDiff = Math.abs(ls.y - rs.y);
+                    const hipDiff = Math.abs(lh.y - rh.y);
+                    spineStress = (shoulderDiff + hipDiff) * 5; // Amplification
+                    if (shoulderDiff > 0.05 || hipDiff > 0.05) isGoodPosture = false;
                 }
                 
-                const color = isGoodPosture ? '#CDFF00' : '#FF0033';
+                const baseColor = isGoodPosture ? '#CDFF00' : '#FF0033';
+
+                // Heatmap logic for Spine (Draw a custom fiery polygon if bad posture)
+                if (!isGoodPosture && ls && rs && lh && rh) {
+                    canvasCtx.fillStyle = `rgba(255, 0, 51, ${Math.min(spineStress, 0.8)})`;
+                    canvasCtx.beginPath();
+                    canvasCtx.moveTo(ls.x * canvasElement.width, ls.y * canvasElement.height);
+                    canvasCtx.lineTo(rs.x * canvasElement.width, rs.y * canvasElement.height);
+                    canvasCtx.lineTo(rh.x * canvasElement.width, rh.y * canvasElement.height);
+                    canvasCtx.lineTo(lh.x * canvasElement.width, lh.y * canvasElement.height);
+                    canvasCtx.closePath();
+                    canvasCtx.fill();
+                }
 
                 drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS,
-                              {color: color, lineWidth: 4});
+                              {color: baseColor, lineWidth: 4});
                 drawLandmarks(canvasCtx, results.poseLandmarks,
-                              {color: '#18181A', fillColor: color, lineWidth: 2, radius: 4});
+                              {color: '#18181A', fillColor: baseColor, lineWidth: 2, radius: 4});
               }
               canvasCtx.restore();
             });
@@ -2196,10 +2261,13 @@
         // Fetch exercise from active program (if any)
         let currentExerciseContext = "VBT Livre - Modo Análise";
         if (activeProgram && activeProgram.program_data && activeProgram.program_data.days) {
-            const todayStr = new Date().toLocaleDateString('pt-BR', {weekday: 'long'}).split('-')[0].toLowerCase();
-            const todayWorkout = activeProgram.program_data.days.find(d => d.day.toLowerCase().includes(todayStr));
+            const dayNames = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
+            const todayStr = dayNames[new Date().getDay()].substring(0, 3);
+            const todayWorkout = activeProgram.program_data.days.find(d => typeof d.day === 'string' && d.day.toLowerCase().includes(todayStr));
             if (todayWorkout && todayWorkout.exercises && todayWorkout.exercises.length > 0) {
                 currentExerciseContext = "Foco Detectado: " + todayWorkout.exercises[0].n;
+            } else {
+                currentExerciseContext = "Análise Livre (Nenhum protocolo p/ hoje)";
             }
         }
         document.getElementById('vision-tution').textContent = currentExerciseContext;
