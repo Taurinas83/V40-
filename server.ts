@@ -46,6 +46,7 @@ import {
   generateLocalResponse,
   UserProfile as LocalUserProfile,
 } from './lib/local-brain/index';
+import { getProgramTemplates } from './lib/local-brain/program-templates';
 
 dotenv.config();
 
@@ -54,6 +55,17 @@ const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
+
+  // ==========================================
+  // CARREGAMENTO DA BASE DE CONHECIMENTO
+  // ==========================================
+  console.log('🧠 Carregando base de conhecimento do local brain...');
+  try {
+    await getProgramTemplates();
+    console.log('✅ Base de conhecimento carregada com sucesso');
+  } catch (error) {
+    console.warn('⚠️  Erro ao carregar base de conhecimento, usando fallback:', (error as Error).message);
+  }
 
   // ==========================================
   // MONITORAMENTO E DATABASE

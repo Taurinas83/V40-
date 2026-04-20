@@ -1,8 +1,9 @@
 /**
  * Program templates for the local brain.
- * Each template defines the structure of a training week for a given
- * objective × split × level × frequency combination.
+ * Can load from hardcoded templates (fallback) or from real database via program-loader.
  */
+
+import { loadProgramDatabase, getCachedPrograms } from './program-loader';
 
 export type Objetivo =
   | 'hipertrofia'
@@ -22,6 +23,9 @@ export type Split =
   | 'reabilitacao';
 
 export type Nivel = 'iniciante' | 'intermediario' | 'avancado';
+
+// Global cache for loaded templates
+let loadedTemplates: ProgramTemplate[] | null = null;
 
 export interface DaySlot {
   label: string;      // e.g. "Dia 1 – Peito e Tríceps"
@@ -722,7 +726,8 @@ const hipertrofiaPPL6: ProgramTemplate = {
 // REGISTRY
 // ─────────────────────────────────────────────────────────
 
-export const PROGRAM_TEMPLATES: ProgramTemplate[] = [
+// Fallback hardcoded templates (used if program-loader fails)
+const FALLBACK_TEMPLATES: ProgramTemplate[] = [
   // Hipertrofia
   hipertrofiaFullbody2,
   hipertrofiaFullbody3,
@@ -744,6 +749,40 @@ export const PROGRAM_TEMPLATES: ProgramTemplate[] = [
   // Manutenção
   manutencaoFullbody3,
 ];
+
+/**
+ * Get program templates from real database (900 programs) or fallback (13 hardcoded).
+ */
+export async function getProgramTemplates(): Promise<ProgramTemplate[]> {
+  // Check if already loaded
+  if (loadedTemplates) {
+    return loadedTemplates;
+  }
+
+  // Try to load from real database
+  try {
+    const loaded = await loadProgramDatabase();
+    if (loaded.length > 0) {
+      loadedTemplates = loaded;
+      console.log(`[Templates] Usando ${loaded.length} templates da base real`);
+      return loaded;
+    }
+  } catch (error) {
+    console.warn('[Templates] Erro ao carregar base real, usando fallback:', (error as Error).message);
+  }
+
+  // Fallback to hardcoded
+  console.warn('[Templates] Usando 13 templates hardcoded como fallback');
+  loadedTemplates = FALLBACK_TEMPLATES;
+  return FALLBACK_TEMPLATES;
+}
+
+/**
+ * Get cached templates without async (used in scoring)
+ */
+export function getProgramTemplatesSync(): ProgramTemplate[] {
+  return loadedTemplates || FALLBACK_TEMPLATES;
+}
 
 /**
  * Score a template against a user profile. Higher = better match.
@@ -790,7 +829,7 @@ export function scoreTemplate(
 }
 
 /**
- * Find the best matching template for a user profile.
+ * Find the best matching template for a user profile (synchronous).
  */
 export function findBestTemplate(opts: {
   objetivo: string;
@@ -799,10 +838,11 @@ export function findBestTemplate(opts: {
   lesoes?: string[];
   idade?: number;
 }): ProgramTemplate {
-  let best = PROGRAM_TEMPLATES[0];
+  const templates = getProgramTemplatesSync();
+  let best = templates[0];
   let bestScore = -1;
 
-  for (const t of PROGRAM_TEMPLATES) {
+  for (const t of templates) {
     const s = scoreTemplate(t, opts);
     if (s > bestScore) {
       bestScore = s;
