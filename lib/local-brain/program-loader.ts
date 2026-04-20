@@ -3,7 +3,7 @@
  * and converts them to ProgramTemplate format for the matching engine.
  */
 
-import type { ProgramTemplate, DaySlot } from './program-templates';
+import type { ProgramTemplate, DaySlot, ExerciseSlot } from './program-templates';
 
 interface RawProgram {
   id: string;
@@ -71,6 +71,58 @@ async function fetchProgramBatch(url: string): Promise<RawProgram[]> {
 }
 
 /**
+ * Generate default day slots based on split type and frequency
+ */
+function generateDaySlots(splitType: string, frequency: number, focus: string[]): DaySlot[] {
+  const baseSlots: Record<string, ExerciseSlot[][]> = {
+    fullbody: [
+      [
+        { categoria: 'lower_body', padrao_motor: 'squat', sets: 3, reps: '8-12', rest: 90 },
+        { categoria: 'upper_body', padrao_motor: 'push', sets: 3, reps: '8-12', rest: 75 },
+        { categoria: 'upper_body', padrao_motor: 'pull', sets: 3, reps: '8-12', rest: 75 },
+        { categoria: 'lower_body', padrao_motor: 'hinge', sets: 2, reps: '6-10', rest: 90 },
+        { categoria: 'core', padrao_motor: 'core', sets: 2, reps: '30-45s', rest: 45 },
+      ],
+    ],
+    upper_lower: [
+      [
+        { categoria: 'upper_body', padrao_motor: 'push', sets: 4, reps: '6-10', rest: 90 },
+        { categoria: 'upper_body', padrao_motor: 'pull', sets: 3, reps: '8-10', rest: 90 },
+      ],
+      [
+        { categoria: 'lower_body', padrao_motor: 'squat', sets: 4, reps: '6-10', rest: 90 },
+        { categoria: 'lower_body', padrao_motor: 'hinge', sets: 3, reps: '6-10', rest: 90 },
+      ],
+    ],
+    ppl: [
+      [
+        { categoria: 'upper_body', padrao_motor: 'push', sets: 4, reps: '8-10', rest: 75 },
+      ],
+      [
+        { categoria: 'upper_body', padrao_motor: 'pull', sets: 4, reps: '8-10', rest: 75 },
+      ],
+      [
+        { categoria: 'lower_body', padrao_motor: 'squat', sets: 4, reps: '6-10', rest: 90 },
+      ],
+    ],
+  };
+
+  const patterns = baseSlots[splitType] || baseSlots.fullbody;
+  const dias: DaySlot[] = [];
+
+  for (let i = 0; i < frequency; i++) {
+    const patternIdx = i % patterns.length;
+    dias.push({
+      label: `Dia ${i + 1}`,
+      focus: focus.join(', ') || 'Treinamento',
+      slots: patterns[patternIdx],
+    });
+  }
+
+  return dias;
+}
+
+/**
  * Convert raw program from JSON to ProgramTemplate shape
  * (simplified version — real programs don't have full day/exercise structure yet)
  */
@@ -113,15 +165,9 @@ function convertRawProgram(raw: RawProgram): ProgramTemplate {
 
   const volumeIntensity = volumeIntensityMap[raw.goal] || { volume: 'moderado', intensidade: 'moderada' };
 
-  // Create stub day slots (will be populated by program-generator with real exercises)
-  const dias: DaySlot[] = [];
-  for (let i = 0; i < raw.frequency_days; i++) {
-    dias.push({
-      label: `Dia ${i + 1}`,
-      focus: raw.focus.join(', ') || 'Treinamento',
-      slots: [], // Will be filled by generator
-    });
-  }
+  // Create day slots with default exercises based on split type
+  const dias: DaySlot[] = generateDaySlots(raw.split_logic, raw.frequency_days, raw.focus);
+
 
   return {
     id: raw.id,

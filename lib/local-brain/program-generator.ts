@@ -111,9 +111,14 @@ function generateExercisesForDay(
   // Track which exercises we've already picked to avoid duplicates in same day
   const usedIds = new Set<string>();
 
+  console.log(`[LocalBrain] Generating exercises for ${daySlot.label}, slots: ${daySlot.slots.length}`);
+
   for (const slot of daySlot.slots) {
     const ex = pickExerciseForSlot(slot, { equipamento, lesoes, nivel, usedIds });
-    if (!ex) continue;
+    if (!ex) {
+      console.log(`[LocalBrain] No exercise found for slot: ${slot.categoria} / ${slot.padrao_motor}`);
+      continue;
+    }
 
     usedIds.add(ex.id);
 
