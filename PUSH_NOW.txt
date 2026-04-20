@@ -1,0 +1,56 @@
+═══════════════════════════════════════════════════════════════
+  FAÇA ISSO AGORA - 30 SEGUNDOS
+═══════════════════════════════════════════════════════════════
+
+PASSO 1: Gerar Token GitHub
+─────────────────────────────
+Abra em seu navegador:
+https://github.com/settings/tokens/new
+
+Faça isso:
+□ Nome: v40-push-token
+□ Marque: repo (full control)
+□ Clique: Generate token
+□ COPIE o token (aparece uma só vez)
+
+Exemplo de token:
+ghp_aBcDeFgHiJkLmNoPqRsTuVwXyZ1234567890
+
+
+PASSO 2: Colar no Terminal
+──────────────────────────
+No terminal, execute:
+
+git push https://SEU_TOKEN_AQUI@github.com/taurinas83/v40-.git claude/analyze-v40-app-QCnT3
+
+Exemplo completo:
+git push https://ghp_aBcDeFgHiJkLmNoPqRsTuVwXyZ1234567890@github.com/taurinas83/v40-.git claude/analyze-v40-app-QCnT3
+
+
+PASSO 3: Verificar
+───────────────────
+Vá em: https://github.com/taurinas83/v40-
+
+Procure a branch: claude/analyze-v40-app-QCnT3
+
+Se ver seus commits lá: ✅ SUCESSO!
+
+
+═══════════════════════════════════════════════════════════════
+  ALTERNATIVA: Se Não Quiser Gerar Token
+═══════════════════════════════════════════════════════════════
+
+Usar GitHub Web Interface:
+1. Acesse: https://github.com/taurinas83/v40-
+2. Clique em "Upload files"
+3. Arraste os arquivos de /home/user/V40-/lib
+4. Faça commit direto no GitHub
+
+Ou:
+
+Use SSH (mais seguro):
+1. Gere chave: ssh-keygen -t ed25519
+2. Adicione em: https://github.com/settings/ssh/new
+3. Execute: git push -u origin claude/analyze-v40-app-QCnT3
+
+═══════════════════════════════════════════════════════════════

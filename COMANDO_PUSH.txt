@@ -1,0 +1,38 @@
+================================
+COMANDO PARA FAZER PUSH
+================================
+
+COPIE E EXECUTE NO TERMINAL:
+
+git push -u origin claude/analyze-v40-app-QCnT3
+
+Se pedir GitHub username/token:
+- Username: seu_usuario_github
+- Password: seu_personal_access_token (create em https://github.com/settings/tokens)
+
+================================
+OU execute o script:
+
+./PUSH_SCRIPT.sh
+
+================================
+VERIFICAR SE DEU CERTO:
+
+git log origin/claude/analyze-v40-app-QCnT3 -3
+
+Deve mostrar:
+  d48b263 docs: guias para push...
+  ff368e1 feat: integrar carregamento dinâmico...
+  217b552 feat: implementar cérebro local...
+
+================================
+DEPOIS DO PUSH, CRIAR PR:
+
+1. Abra: https://github.com/Taurinas83/V40-/pulls
+2. Clique "New pull request"
+3. Base: main
+   Compare: claude/analyze-v40-app-QCnT3
+4. Title: "feat: local brain com 900 programas reais"
+5. Create pull request (como DRAFT)
+
+================================
