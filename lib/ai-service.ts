@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 import { config } from './config';
 import { ChatResponse, AIServiceError } from './responses';
 
-export type AIProvider = 'groq' | 'gemini' | 'openai' | 'offline';
+export type AIProvider = 'groq' | 'gemini' | 'openai' | 'ollama' | 'offline';
 
 interface AIMessage {
   role: 'system' | 'user' | 'assistant';
@@ -32,6 +32,7 @@ export class AIService {
     if (config.apiKeys.groq) providers.push('groq');
     if (config.apiKeys.gemini) providers.push('gemini');
     if (config.apiKeys.openai) providers.push('openai');
+    if (config.ollama.enabled) providers.push('ollama');
 
     for (const provider of providers) {
       try {
@@ -62,6 +63,8 @@ export class AIService {
         return this.callGemini();
       case 'openai':
         return this.callOpenAI();
+      case 'ollama':
+        return this.callOllama();
       default:
         throw new AIServiceError(`Provedor desconhecido: ${provider}`);
     }
@@ -153,6 +156,33 @@ export class AIService {
 
     const text = response.choices[0].message.content;
     if (!text) throw new AIServiceError('Resposta vazia do OpenAI');
+
+    return text;
+  }
+
+  /**
+   * Chamada ao Ollama (LLM local — Qwen, Llama, etc.)
+   */
+  private async callOllama(): Promise<string> {
+    const { baseUrl, model } = config.ollama;
+
+    const openai = new OpenAI({
+      apiKey: 'ollama', // required by OpenAI client but unused by Ollama
+      baseURL: `${baseUrl}/v1`,
+    });
+
+    const response = await openai.chat.completions.create({
+      model,
+      messages: [
+        { role: 'system', content: this.systemPrompt + '\n\nResponda em JSON válido apenas.' },
+        { role: 'user', content: this.userContext },
+      ],
+      temperature: 0.4,
+      max_tokens: 2000,
+    });
+
+    const text = response.choices[0].message.content;
+    if (!text) throw new AIServiceError('Resposta vazia do Ollama');
 
     return text;
   }

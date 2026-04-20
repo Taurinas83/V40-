@@ -41,6 +41,11 @@ import {
   enrichExerciseWithDefinition,
   getAvailableExerciseIds
 } from './lib/exercise-db';
+import {
+  canHandleLocally,
+  generateLocalResponse,
+  UserProfile as LocalUserProfile,
+} from './lib/local-brain/index';
 
 dotenv.config();
 
@@ -160,6 +165,30 @@ async function startServer() {
     const startTime = Date.now();
     try {
       const validatedRequest = validateChatRequest(req.body);
+
+      // ──────────────────────────────────────────────
+      // LOCAL BRAIN — handles 90%+ of requests for free
+      // ──────────────────────────────────────────────
+      const userProfileForBrain: Partial<LocalUserProfile> = {
+        objetivo:        validatedRequest.userProfile?.objetivo,
+        nivel:           validatedRequest.userProfile?.nivel,
+        diasDisponiveis: validatedRequest.userProfile?.diasDisponiveis,
+        equipamento:     validatedRequest.userProfile?.equipamento,
+        lesoes:          validatedRequest.userProfile?.lesoes,
+        idade:           validatedRequest.userProfile?.age,
+        genero:          validatedRequest.userProfile?.gender,
+        nome:            validatedRequest.userProfile?.name,
+      };
+
+      if (canHandleLocally(validatedRequest.prompt, userProfileForBrain)) {
+        const localResponse = generateLocalResponse(
+          validatedRequest.prompt,
+          userProfileForBrain,
+          startTime
+        );
+        return res.json(localResponse);
+      }
+      // ──────────────────────────────────────────────
 
       const progressAnalysis = analyzeProgress(
         validatedRequest.recentCheckins || [],
@@ -362,10 +391,12 @@ RESPOSTA EM JSON:
 📍 URL: http://localhost:${config.port}
 🔧 Ambiente: ${config.nodeEnv}
 🔐 JWT Secret: ${config.jwtSecret === 'dev-secret-change-in-production' ? 'DEV (MUDE EM PRODUÇÃO!)' : 'Configurado'}
+🧠 Cérebro Local: ✓ (zero custo de API)
 🤖 APIs Disponíveis:
-  - Groq: ${config.apiKeys.groq ? '✓' : '✗'}
+  - Groq:   ${config.apiKeys.groq ? '✓' : '✗'}
   - Gemini: ${config.apiKeys.gemini ? '✓' : '✗'}
   - OpenAI: ${config.apiKeys.openai ? '✓' : '✗'}
+  - Ollama: ${config.ollama.enabled ? `✓ (${config.ollama.model})` : '✗ (OLLAMA_ENABLED=true para ativar)'}
     `);
   });
 }

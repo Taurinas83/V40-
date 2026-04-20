@@ -11,6 +11,11 @@ export interface AppConfig {
     openai: string | null;
     groq: string | null;
   };
+  ollama: {
+    baseUrl: string;
+    model: string;
+    enabled: boolean;
+  };
   cors: {
     origin: string[];
     credentials: boolean;
@@ -60,6 +65,11 @@ export function loadConfig(): AppConfig {
     auth: {
       tokenExpiry: '7d',
       bcryptRounds: 10,
+    },
+    ollama: {
+      baseUrl: process.env.OLLAMA_URL || 'http://localhost:11434',
+      model: process.env.OLLAMA_MODEL || 'llama3.2:3b',
+      enabled: process.env.OLLAMA_ENABLED === 'true',
     },
   };
 }

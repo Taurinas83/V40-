@@ -1,10 +1,10 @@
 import '@testing-library/jest-dom';
 import { expect, afterEach, beforeEach, vi } from 'vitest';
 
-// Limpar localStorage e sessionStorage após cada teste
+// Limpar localStorage e sessionStorage após cada teste (browser envs only)
 afterEach(() => {
-  localStorage.clear();
-  sessionStorage.clear();
+  if (typeof localStorage !== 'undefined') localStorage.clear();
+  if (typeof sessionStorage !== 'undefined') sessionStorage.clear();
 });
 
 // Mock de variáveis de ambiente

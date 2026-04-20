@@ -9,6 +9,13 @@ export interface ChatRequestPayload {
     name?: string;
     age?: number;
     gender?: string;
+    // Local brain profile extensions
+    objetivo?: string;
+    nivel?: string;
+    diasDisponiveis?: number;
+    equipamento?: string[];
+    lesoes?: string[];
+    semanaAtual?: number;
   };
   currentProgram?: Record<string, any>;
   recentCheckins?: Array<Record<string, any>>;
@@ -127,6 +134,13 @@ export function validateChatRequest(body: any): ChatRequestPayload {
     age: validateAge(userProfile?.age),
     gender: validateGender(userProfile?.gender),
     id: userProfile?.id || undefined,
+    // Pass extended fields through for local brain (sanitised but not strictly validated)
+    objetivo:        typeof userProfile?.objetivo === 'string' ? userProfile.objetivo.slice(0, 50) : undefined,
+    nivel:           typeof userProfile?.nivel === 'string' ? userProfile.nivel.slice(0, 30) : undefined,
+    diasDisponiveis: typeof userProfile?.diasDisponiveis === 'number' ? Math.min(7, Math.max(1, userProfile.diasDisponiveis)) : undefined,
+    equipamento:     Array.isArray(userProfile?.equipamento) ? (userProfile.equipamento as any[]).filter(e => typeof e === 'string').map((e: string) => e.slice(0, 50)) : undefined,
+    lesoes:          Array.isArray(userProfile?.lesoes) ? (userProfile.lesoes as any[]).filter(e => typeof e === 'string').map((e: string) => e.slice(0, 50)) : undefined,
+    semanaAtual:     typeof userProfile?.semanaAtual === 'number' ? Math.max(1, userProfile.semanaAtual) : undefined,
   };
 
   // Validar programa atual (se fornecido)
