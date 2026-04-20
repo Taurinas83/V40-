@@ -5,6 +5,8 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
 import { config } from './lib/config';
+import { initializeSentry, captureApiMetric, addBreadcrumb } from './lib/monitoring';
+import { initializeDatabase, isDatabaseAvailable } from './lib/database';
 import {
   helmetMiddleware,
   corsMiddleware,
@@ -49,6 +51,12 @@ async function startServer() {
   const app = express();
 
   // ==========================================
+  // MONITORAMENTO E DATABASE
+  // ==========================================
+  initializeSentry();
+  initializeDatabase();
+
+  // ==========================================
   // MIDDLEWARE DE SEGURANÇA
   // ==========================================
   app.use(helmetMiddleware);
@@ -61,13 +69,20 @@ async function startServer() {
   // ==========================================
   // HEALTH CHECK
   // ==========================================
-  app.get('/api/health', (req: Request, res: Response) => {
+  app.get('/api/health', async (req: Request, res: Response) => {
+    const dbAvailable = await isDatabaseAvailable();
+
     res.json({
       status: 'ok',
       timestamp: new Date().toISOString(),
-      hasGeminiKey: !!config.apiKeys.gemini,
-      hasGroqKey: !!config.apiKeys.groq,
-      hasOpenAIKey: !!config.apiKeys.openai,
+      environment: config.nodeEnv,
+      services: {
+        gemini: !!config.apiKeys.gemini,
+        groq: !!config.apiKeys.groq,
+        openai: !!config.apiKeys.openai,
+        supabase: dbAvailable,
+      },
+      version: '1.0.0',
     });
   });
 
