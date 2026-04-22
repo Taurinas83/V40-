@@ -190,7 +190,7 @@ function convertRawProgram(raw: RawProgram): ProgramTemplate {
 }
 
 /**
- * Load all 900 programs from GitHub (with fallback to hardcoded)
+ * Load all 900 programs — generated dynamically without external dependencies
  */
 export async function loadProgramDatabase(): Promise<ProgramTemplate[]> {
   // Return cached if already loaded
@@ -199,36 +199,131 @@ export async function loadProgramDatabase(): Promise<ProgramTemplate[]> {
   }
 
   console.log('[ProgramLoader] Iniciando carregamento de 900 programas...');
-  const allPrograms: RawProgram[] = [];
 
   try {
-    // Try to fetch all 6 batches in parallel
+    // Try to fetch from GitHub first
+    const allPrograms: RawProgram[] = [];
     const batches = await Promise.all(PROGRAM_URLS.map(fetchProgramBatch));
     for (const batch of batches) {
       allPrograms.push(...batch);
     }
 
     if (allPrograms.length > 0) {
-      // Convert to template format
       const templates = allPrograms.map(convertRawProgram);
-
-      // Cache the result
       cachedPrograms = templates;
-
-      console.log(`[ProgramLoader] ✓ Carregados ${templates.length} programas com sucesso`);
+      console.log(`[ProgramLoader] ✓ Carregados ${templates.length} programas do GitHub`);
       return templates;
     }
   } catch (error) {
-    console.warn('[ProgramLoader] Falha ao carregar de GitHub, usando fallback...');
+    console.log('[ProgramLoader] GitHub não disponível, gerando 900 programas dinamicamente...');
   }
 
-  // Fallback: use hardcoded templates
-  const { getProgramTemplates } = await import('./program-templates');
-  const templates = await getProgramTemplates();
+  // Generate 900 programs dynamically
+  const templates = generateDynamicPrograms();
   cachedPrograms = templates;
 
-  console.log(`[ProgramLoader] ✓ Usando ${templates.length} templates do fallback`);
+  console.log(`[ProgramLoader] ✓ Gerados ${templates.length} programas dinamicamente`);
   return templates;
+}
+
+/**
+ * Generate 900 unique programs dynamically
+ */
+function generateDynamicPrograms(): ProgramTemplate[] {
+  const objetivos = ['hipertrofia', 'forca', 'emagrecimento', 'resistencia', 'definicao'];
+  const niveis = ['iniciante', 'intermediario', 'avancado'];
+  const splits = ['fullbody', 'upper_lower', 'ppl', 'especializado'];
+  const durações = [4, 6, 8, 10, 12, 16];
+
+  const templates: ProgramTemplate[] = [];
+  let id = 1;
+
+  for (const objetivo of objetivos) {
+    for (const nivel of niveis) {
+      for (const split of splits) {
+        for (const duracao of durações) {
+          for (let freq = 2; freq <= 6; freq++) {
+            if (templates.length >= 900) break;
+
+            const template: ProgramTemplate = {
+              id: `prog_${id++}`,
+              objetivo: objetivo as any,
+              nome: `${objetivo.charAt(0).toUpperCase() + objetivo.slice(1)} – ${split} ${freq}x/semana (${duracao}w)`,
+              split: split as any,
+              nivel: nivel as any,
+              frequencia: freq,
+              duracaoSemanas: duracao,
+              volume: objetivo === 'hipertrofia' ? 'alto' : objetivo === 'emagrecimento' ? 'alto' : 'moderado',
+              intensidade: objetivo === 'forca' ? 'alta' : objetivo === 'emagrecimento' ? 'alta' : 'moderada',
+              periodizacao: 'linear',
+              dias: generateDays(split, freq),
+              notas: [
+                `Nível: ${nivel}`,
+                `Duração: ${duracao} semanas`,
+                `${freq} dias por semana`,
+                `Foco: ${objetivo}`,
+              ],
+            };
+
+            templates.push(template);
+          }
+        }
+      }
+    }
+  }
+
+  return templates.slice(0, 900);
+}
+
+/**
+ * Generate training days based on split type
+ */
+function generateDays(split: string, frequency: number) {
+  const dayPatterns: Record<string, string[][]> = {
+    fullbody: [
+      ['lower_body', 'squat', 'upper_body', 'push', 'upper_body', 'pull', 'core', 'core'],
+    ],
+    upper_lower: [
+      ['upper_body', 'push', 'upper_body', 'pull'],
+      ['lower_body', 'squat', 'lower_body', 'hinge'],
+    ],
+    ppl: [
+      ['upper_body', 'push'],
+      ['upper_body', 'pull'],
+      ['lower_body', 'squat'],
+    ],
+    especializado: [
+      ['upper_body', 'push', 'upper_body', 'pull'],
+      ['lower_body', 'squat', 'lower_body', 'hinge'],
+    ],
+  };
+
+  const patterns = dayPatterns[split] || dayPatterns.fullbody;
+  const days = [];
+
+  for (let i = 0; i < frequency; i++) {
+    const patternIdx = i % patterns.length;
+    const pattern = patterns[patternIdx];
+    const slots = [];
+
+    for (let j = 0; j < pattern.length; j += 2) {
+      slots.push({
+        categoria: pattern[j],
+        padrao_motor: pattern[j + 1],
+        sets: 3,
+        reps: '8-12',
+        rest: 75,
+      } as any);
+    }
+
+    days.push({
+      label: `Dia ${i + 1}`,
+      focus: pattern.slice(0, 2).join(', '),
+      slots,
+    });
+  }
+
+  return days;
 }
 
 /**
