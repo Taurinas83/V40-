@@ -1,6 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
-import { canHandleLocally, generateLocalResponse } from '../lib/local-brain/index';
 
 // ==========================================
 // CÉREBRO BASE (KNOWLEDGE DICTIONARY 40+)
@@ -24,6 +23,133 @@ const EXPERT_BRAIN: Record<string, any> = {
   "prancha_abdominal": { n: "Prancha Abdominal (Plank)", muscles: "Core Sistêmico", desc: ["Contraia ativamente os glúteos.", "Puxe os cotovelos em direção aos pés para esmagar o abdômen."], mistakes: ["Quadril afundando causando dor lombar"] }
 };
 
+// ============================================================
+// LOCAL BRAIN INLINE — zero external imports, serverless-safe
+// ============================================================
+
+const PROGRAM_KEYWORDS = ['programa','treino','treinamento','plano','montar','criar','gerar','fazer','semana','hipertrofia','emagrecer','emagrecimento','forca','força','resistencia','resistência','definicao','definição','reabilitacao','2 dias','3 dias','4 dias','5 dias','6 dias','2x','3x','4x','5x','6x'];
+
+function detectDias(lower: string, profile: any): number {
+  if (profile?.diasDisponiveis) return profile.diasDisponiveis;
+  const m = lower.match(/(\d)\s*(dias|vezes|x)\s*(por\s*semana|semana)/);
+  if (m) return Math.min(6, Math.max(2, parseInt(m[1])));
+  if (/\b5\s*dias|\b5x/.test(lower)) return 5;
+  if (/\b4\s*dias|\b4x/.test(lower)) return 4;
+  if (/\b6\s*dias|\b6x/.test(lower)) return 6;
+  if (/\b2\s*dias|\b2x/.test(lower)) return 2;
+  return 3;
+}
+
+function detectObjetivo(lower: string, profile: any): string {
+  if (profile?.objetivo) return profile.objetivo;
+  if (/emagrec|perder.*(peso|gordura)|queimar/.test(lower)) return 'emagrecimento';
+  if (/hipertrofia|ganhar.*(massa|músculo)|musculaç/.test(lower)) return 'hipertrofia';
+  if (/força|forca|powerlifting/.test(lower)) return 'forca';
+  if (/resistên|resistencia|cardio/.test(lower)) return 'resistencia';
+  if (/defini[çc]/.test(lower)) return 'definicao';
+  return 'hipertrofia';
+}
+
+function buildInlineProgram(objetivo: string, dias: number, nivel: string, nome: string): any {
+  const splitDays: Record<number, string[]> = {
+    2: ['Fullbody A', 'Fullbody B'],
+    3: ['Fullbody A (Força)', 'Fullbody B (Volume)', 'Fullbody C (Metabólico)'],
+    4: ['Upper (Força)', 'Lower (Força)', 'Upper (Volume)', 'Lower (Volume)'],
+    5: ['Push', 'Pull', 'Legs', 'Upper (Volume)', 'Lower (Metabólico)'],
+    6: ['Push A', 'Pull A', 'Legs A', 'Push B', 'Pull B', 'Legs B'],
+  };
+
+  const exercisesByFocus: Record<string, any[]> = {
+    'Push': [
+      { ...EXPERT_BRAIN['supino_reto_halteres'], sets: 4, reps: '8-10', t: 90, bfr: false },
+      { ...EXPERT_BRAIN['supino_inclinado_halteres'], sets: 3, reps: '10-12', t: 75, bfr: false },
+      { ...EXPERT_BRAIN['desenvolvimento_halteres'], sets: 3, reps: '10-12', t: 75, bfr: false },
+      { ...EXPERT_BRAIN['elevacao_lateral'], sets: 3, reps: '12-15', t: 60, bfr: false },
+      { ...EXPERT_BRAIN['triceps_corda'], sets: 3, reps: '12-15', t: 60, bfr: false },
+    ],
+    'Pull': [
+      { ...EXPERT_BRAIN['puxada_frente'], sets: 4, reps: '8-10', t: 90, bfr: false },
+      { ...EXPERT_BRAIN['remada_curvada'], sets: 4, reps: '8-10', t: 90, bfr: false },
+      { ...EXPERT_BRAIN['rosca_direta'], sets: 3, reps: '10-12', t: 60, bfr: false },
+    ],
+    'Legs': [
+      { ...EXPERT_BRAIN['agachamento_livre'], sets: 4, reps: '8-10', t: 90, bfr: false },
+      { ...EXPERT_BRAIN['leg_press'], sets: 3, reps: '10-12', t: 75, bfr: false },
+      { ...EXPERT_BRAIN['terra_romeno'], sets: 3, reps: '8-10', t: 90, bfr: false },
+      { ...EXPERT_BRAIN['mesa_flexora'], sets: 3, reps: '12-15', t: 60, bfr: false },
+      { ...EXPERT_BRAIN['panturrilha_em_pe'], sets: 4, reps: '15-20', t: 45, bfr: false },
+    ],
+    'Upper': [
+      { ...EXPERT_BRAIN['supino_reto_halteres'], sets: 4, reps: '8-10', t: 90, bfr: false },
+      { ...EXPERT_BRAIN['puxada_frente'], sets: 4, reps: '8-10', t: 90, bfr: false },
+      { ...EXPERT_BRAIN['desenvolvimento_halteres'], sets: 3, reps: '10-12', t: 75, bfr: false },
+      { ...EXPERT_BRAIN['remada_curvada'], sets: 3, reps: '10-12', t: 75, bfr: false },
+      { ...EXPERT_BRAIN['elevacao_lateral'], sets: 3, reps: '12-15', t: 60, bfr: false },
+    ],
+    'Lower': [
+      { ...EXPERT_BRAIN['agachamento_livre'], sets: 4, reps: '8-10', t: 90, bfr: false },
+      { ...EXPERT_BRAIN['leg_press'], sets: 3, reps: '10-12', t: 75, bfr: false },
+      { ...EXPERT_BRAIN['terra_romeno'], sets: 3, reps: '8-10', t: 90, bfr: false },
+      { ...EXPERT_BRAIN['mesa_flexora'], sets: 3, reps: '12-15', t: 60, bfr: false },
+      { ...EXPERT_BRAIN['agachamento_bulgaro'], sets: 3, reps: '10-12', t: 75, bfr: false },
+    ],
+    'Fullbody': [
+      { ...EXPERT_BRAIN['agachamento_livre'], sets: 3, reps: '8-12', t: 90, bfr: false },
+      { ...EXPERT_BRAIN['supino_reto_halteres'], sets: 3, reps: '8-12', t: 75, bfr: false },
+      { ...EXPERT_BRAIN['puxada_frente'], sets: 3, reps: '8-12', t: 75, bfr: false },
+      { ...EXPERT_BRAIN['terra_romeno'], sets: 3, reps: '8-10', t: 90, bfr: false },
+      { ...EXPERT_BRAIN['prancha_abdominal'], sets: 3, reps: '40s', t: 45, bfr: false },
+    ],
+  };
+
+  const labels = splitDays[dias] || splitDays[3];
+  const days = labels.map((label: string) => {
+    const focusKey = Object.keys(exercisesByFocus).find(k => label.includes(k)) || 'Fullbody';
+    return {
+      day: label,
+      focus: label,
+      exercises: exercisesByFocus[focusKey],
+    };
+  });
+
+  const objLabel: Record<string,string> = { hipertrofia:'Hipertrofia', emagrecimento:'Emagrecimento', forca:'Força', resistencia:'Resistência', definicao:'Definição', reabilitacao:'Reabilitação' };
+
+  return {
+    name: `Programa de ${objLabel[objetivo] || 'Hipertrofia'} – ${dias}x/semana${nome ? ` para ${nome}` : ''}`,
+    days,
+    notes: [
+      `🔥 40+ Dica: 10-15min de aquecimento antes de cada treino.`,
+      `💤 Sono 7-9h por noite é fundamental para recuperação.`,
+      `🥩 Proteína: mínimo 1,8g/kg por dia para preservar massa muscular.`,
+      `⏱️ Descanse os intervalos indicados entre as séries.`,
+    ],
+  };
+}
+
+function tryLocalBrain(prompt: string, profile: any): any | null {
+  const lower = (prompt || '').toLowerCase();
+  const hasProgramKeyword = PROGRAM_KEYWORDS.some(kw => lower.includes(kw));
+  const hasObjetivo = !!(profile?.objetivo || profile?.diasDisponiveis);
+  if (!hasProgramKeyword && !hasObjetivo) return null;
+
+  const objetivo = detectObjetivo(lower, profile);
+  const dias = detectDias(lower, profile);
+  const nivel = profile?.nivel || 'intermediario';
+  const nome = profile?.name || profile?.nome || '';
+
+  const program = buildInlineProgram(objetivo, dias, nivel, nome);
+
+  const objText: Record<string,string> = { hipertrofia:'ganho de massa muscular', emagrecimento:'emagrecimento e queima de gordura', forca:'desenvolvimento de força', resistencia:'resistência física', definicao:'definição muscular', reabilitacao:'reabilitação' };
+
+  return {
+    text: `Perfeito${nome ? `, ${nome}` : ''}! Aqui está seu programa de **${objText[objetivo] || objetivo}** — ${dias}x por semana, nível ${nivel}. Inclui recomendações específicas para 40+ com foco em recuperação e preservação articular.\n\nExecute os exercícios na ordem indicada e respeite os tempos de descanso. Qualquer dúvida ou dor, me avise! 💪`,
+    isProgram: true,
+    program,
+    isWorkout: false,
+    _metadata: { aiProvider: 'local', timestamp: new Date().toISOString(), responseTime: 1 },
+  };
+}
+
 export default async function handler(req: any, res: any) {
   // CORS Setup for Vercel
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -45,22 +171,12 @@ export default async function handler(req: any, res: any) {
   try {
     const { prompt, userProfile, currentProgram, recentCheckins } = req.body;
 
-    // ─── LOCAL BRAIN FIRST (zero API cost) ───
-    const localProfile = {
-      objetivo:        userProfile?.objetivo,
-      nivel:           userProfile?.nivel,
-      diasDisponiveis: userProfile?.diasDisponiveis,
-      equipamento:     userProfile?.equipamento,
-      lesoes:          userProfile?.lesoes,
-      idade:           userProfile?.age,
-      genero:          userProfile?.gender,
-      nome:            userProfile?.name,
-    };
-    if (canHandleLocally(prompt, localProfile)) {
-      const localResponse = generateLocalResponse(prompt, localProfile, Date.now());
-      return res.status(200).json(localResponse);
+    // ─── LOCAL BRAIN FIRST (zero API cost, inline) ───
+    const localResult = tryLocalBrain(prompt, userProfile);
+    if (localResult) {
+      return res.status(200).json(localResult);
     }
-    // ─────────────────────────────────────────
+    // ─────────────────────────────────────────────────
 
     const geminiApiKey = process.env.GEMINI_API_KEY;
     const openaiApiKey = process.env.OPENAI_API_KEY;
