@@ -190,7 +190,7 @@ function convertRawProgram(raw: RawProgram): ProgramTemplate {
 }
 
 /**
- * Load all 900 programs from GitHub
+ * Load all 900 programs from GitHub (with fallback to hardcoded)
  */
 export async function loadProgramDatabase(): Promise<ProgramTemplate[]> {
   // Return cached if already loaded
@@ -201,19 +201,33 @@ export async function loadProgramDatabase(): Promise<ProgramTemplate[]> {
   console.log('[ProgramLoader] Iniciando carregamento de 900 programas...');
   const allPrograms: RawProgram[] = [];
 
-  // Fetch all 6 batches in parallel
-  const batches = await Promise.all(PROGRAM_URLS.map(fetchProgramBatch));
-  for (const batch of batches) {
-    allPrograms.push(...batch);
+  try {
+    // Try to fetch all 6 batches in parallel
+    const batches = await Promise.all(PROGRAM_URLS.map(fetchProgramBatch));
+    for (const batch of batches) {
+      allPrograms.push(...batch);
+    }
+
+    if (allPrograms.length > 0) {
+      // Convert to template format
+      const templates = allPrograms.map(convertRawProgram);
+
+      // Cache the result
+      cachedPrograms = templates;
+
+      console.log(`[ProgramLoader] ✓ Carregados ${templates.length} programas com sucesso`);
+      return templates;
+    }
+  } catch (error) {
+    console.warn('[ProgramLoader] Falha ao carregar de GitHub, usando fallback...');
   }
 
-  // Convert to template format
-  const templates = allPrograms.map(convertRawProgram);
-
-  // Cache the result
+  // Fallback: use hardcoded templates
+  const { getProgramTemplates } = await import('./program-templates');
+  const templates = await getProgramTemplates();
   cachedPrograms = templates;
 
-  console.log(`[ProgramLoader] ✓ Carregados ${templates.length} programas com sucesso`);
+  console.log(`[ProgramLoader] ✓ Usando ${templates.length} templates do fallback`);
   return templates;
 }
 
