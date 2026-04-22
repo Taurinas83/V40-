@@ -19,6 +19,8 @@ export interface ExerciseV2 {
   contraindicado_para: string[];
   // Substitute exercise IDs when injured
   substitutos: Partial<Record<string, string>>;
+  // Optional YouTube video ID for tutorial modal
+  video_url?: string;
 }
 
 export const EXERCISE_DB_V2: Record<string, ExerciseV2> = {

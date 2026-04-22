@@ -675,6 +675,47 @@
             </div>
           </div>
 
+          <!-- ═══ VIDEO TUTORIAL MODAL ════════════════════════════ -->
+          <div id="video-tutorial-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4">
+            <div class="bg-zinc-900 border border-primary/40 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
+              <div class="bg-gradient-to-r from-zinc-900 to-primary/10 px-4 py-3 flex items-center justify-between">
+                <div>
+                  <p class="text-primary text-[10px] font-bold uppercase tracking-widest">Tutorial de Execução</p>
+                  <h3 id="tutorial-exercise-name" class="text-white font-black text-sm">Carregando...</h3>
+                </div>
+                <button onclick="closeTutorialAndStartCamera()" class="bg-primary text-black font-black text-xs px-3 py-2 rounded-lg uppercase">
+                  ▶ Iniciar Análise
+                </button>
+              </div>
+              <!-- YouTube embed -->
+              <div class="relative bg-black" style="padding-top: 56.25%">
+                <iframe id="tutorial-iframe" class="absolute inset-0 w-full h-full" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                <!-- Fallback search link when no embed available -->
+                <div id="tutorial-search-fallback" class="hidden absolute inset-0 flex items-center justify-center bg-zinc-950">
+                  <div class="text-center p-6">
+                    <p class="text-white text-sm font-bold mb-1">Assista antes de começar:</p>
+                    <a id="tutorial-search-link" href="#" target="_blank" class="text-primary underline text-sm font-bold">🎬 Ver tutorial no YouTube</a>
+                    <p class="text-zinc-400 text-xs mt-3">Técnica correta = resultados + segurança articular</p>
+                  </div>
+                </div>
+              </div>
+              <!-- Tip bar -->
+              <div class="px-4 py-3 bg-zinc-950 flex items-start gap-2">
+                <span class="text-primary text-lg">💡</span>
+                <p id="tutorial-tip" class="text-zinc-300 text-xs leading-relaxed">Observe a posição das articulações durante toda a execução.</p>
+              </div>
+              <div class="px-4 pb-4 flex gap-2">
+                <button onclick="closeTutorialAndStartCamera()" class="flex-1 bg-primary text-black font-black text-xs py-3 rounded-xl uppercase tracking-wide">
+                  ✅ Entendi — Iniciar Análise ao Vivo
+                </button>
+                <button onclick="document.getElementById('video-tutorial-modal').classList.add('hidden')" class="px-4 py-3 bg-zinc-800 text-zinc-400 text-xs rounded-xl">
+                  Pular
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- ═══════════════════════════════════════════════════════ -->
+
           <div
             id="warmup-overlay"
             class="absolute top-8 left-0 right-0 z-20 hidden flex-col items-center"
@@ -714,7 +755,7 @@
         </div>
         <div class="mt-4 flex gap-2">
           <button
-            onclick="startVisionAI()"
+            onclick="startVisionAIWithTutorial()"
             class="flex-1 border border-primary bg-primary/10 text-primary py-3 font-display font-black text-xs uppercase tracking-widest hover:bg-primary hover:text-dark transition-colors"
           >
             VBT Livre
@@ -1931,7 +1972,19 @@
 
         const daysHtml = prog.days
           .map(
-            (day) => `
+            (day) => {
+              const exercisesHtml = (day.exercises || []).map(ex => {
+                const exId = ex.id || '';
+                const hasVideo = typeof VIDEO_CATALOG_JS !== 'undefined' && VIDEO_CATALOG_JS[exId];
+                const videoBtn = hasVideo
+                  ? `<button onclick='showExerciseTutorial(${JSON.stringify({id:ex.id,n:ex.n||ex.name||"Exercício"})})' class="text-[9px] text-primary font-bold uppercase bg-primary/10 px-2 py-1 rounded hover:bg-primary/20 ml-auto flex-shrink-0">▶ Tutorial</button>`
+                  : `<a href="https://www.youtube.com/results?search_query=${encodeURIComponent((ex.n||'exercício')+' técnica correta')}" target="_blank" class="text-[9px] text-zinc-500 font-bold uppercase bg-zinc-800 px-2 py-1 rounded ml-auto flex-shrink-0">🔍 YouTube</a>`;
+                return `<div class="flex items-center gap-2 px-3 py-2 border-t border-slate-700/30">
+                  <span class="text-zinc-300 text-[11px] flex-1">${escapeHtml(ex.n||ex.name||exId)} <span class="text-zinc-500">${ex.sets||3}×${ex.reps||'8-12'}</span></span>
+                  ${videoBtn}
+                </div>`;
+              }).join('');
+              return `
                 <div class="border-b border-slate-700/50 last:border-0">
                     <div class="flex items-center gap-3 p-3 bg-slate-800/60">
                         <div class="w-2 h-2 bg-primary rounded-full flex-shrink-0"></div>
@@ -1941,7 +1994,9 @@
                         </div>
                         <span class="ml-auto text-[10px] text-slate-500 font-medium">${day.exercises.length} ex.</span>
                     </div>
-                </div>`,
+                    ${exercisesHtml}
+                </div>`;
+            }
           )
           .join("");
 
@@ -2225,6 +2280,11 @@
                     canvasCtx.fill();
                 }
 
+                // Real-time pose analysis feedback
+                if (typeof updatePoseFeedbackOverlay === 'function') {
+                  updatePoseFeedbackOverlay(results.poseLandmarks, window._currentPadrao || 'squat');
+                }
+
                 drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS,
                               {color: baseColor, lineWidth: 4});
                 drawLandmarks(canvasCtx, results.poseLandmarks,
@@ -2260,34 +2320,39 @@
 
         // Fetch exercise from active program (if any)
         let currentExerciseContext = "VBT Livre - Modo Análise";
+        let currentExerciseForAnalysis = null;
         if (activeProgram && activeProgram.program_data && activeProgram.program_data.days) {
             const dayNames = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
             const todayStr = dayNames[new Date().getDay()].substring(0, 3);
             const todayWorkout = activeProgram.program_data.days.find(d => typeof d.day === 'string' && d.day.toLowerCase().includes(todayStr));
             if (todayWorkout && todayWorkout.exercises && todayWorkout.exercises.length > 0) {
-                currentExerciseContext = "Foco Detectado: " + todayWorkout.exercises[0].n;
+                currentExerciseForAnalysis = todayWorkout.exercises[0];
+                currentExerciseContext = "Analisando: " + currentExerciseForAnalysis.n;
+                // Set padrao_motor for real-time analysis
+                if (typeof detectPadraoFromExercise === 'function') {
+                  window._currentPadrao = detectPadraoFromExercise(currentExerciseForAnalysis.n);
+                }
             } else {
-                currentExerciseContext = "Análise Livre (Nenhum protocolo p/ hoje)";
+                currentExerciseContext = "Análise Livre (sem protocolo p/ hoje)";
+                window._currentPadrao = 'squat';
             }
         }
         document.getElementById('vision-tution').textContent = currentExerciseContext;
+        document.getElementById('vision-feedback').textContent = 'Aguardando Movimento...';
+        document.getElementById('vision-feedback').style.color = '';
 
-        // Periodic heuristic simulation logic overlay on top of actual pose tracking
-        let phases = ["Excêntrica", "Concêntrica"];
+        // Real-time feedback is now handled by updatePoseFeedbackOverlay() in onResults
+        // Keep interval only for voice alerts on sustained bad posture
         visionInterval = setInterval(() => {
           if (!aiAnalysisActive) return;
-          const rPhase = phases[Math.floor(Math.random() * phases.length)];
-          const tut = (Math.random() * 2 + 1).toFixed(1);
-          
-          if (rPhase === "Excêntrica" && tut < 2.0) {
-            document.getElementById("vision-feedback").textContent =
-              "🚨 ALERTA VBT: DESÇA MAIS LENTO (MUITO RÁPIDO)";
-            speakMessage(
-              "Atenção, segure a descida. Tensão mecânica caindo."
-            );
-          } else {
-            document.getElementById("vision-feedback").textContent =
-              `⚡ CADÊNCIA ESTÁVEL: ${tut}s`;
+          const feedbackEl = document.getElementById("vision-feedback");
+          const text = feedbackEl?.textContent || '';
+          if (text.includes('🔴') || text.includes('⬇️') || text.includes('🦵')) {
+            speakMessage(text.replace(/[🔴⬇️🦵⚠️💪✅⚡]/gu, '').trim());
+          }
+          // fallback display if no landmarks detected yet
+          if (text === 'Aguardando Movimento...' || text === '') {
+            feedbackEl.textContent = `⚡ Sensor ativo — posicione-se na câmera`;
           }
         }, 4000);
 
@@ -2495,6 +2560,223 @@
       if (pageParam) {
         // Will be handled after auth
         sessionStorage.setItem("redirectPage", pageParam);
+      }
+    </script>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         VIDEO CATALOG + POSE ANALYZER (inline, no external imports)
+    ════════════════════════════════════════════════════════════════ -->
+    <script>
+      // ─── Video Catalog ─────────────────────────────────────────────
+      const VIDEO_CATALOG_JS = {
+        agachamento_livre:        { youtubeId: 'aclHkVaku9U', tip: 'Calcanhares no chão, joelhos seguindo os pés, desça até 90°' },
+        agachamento_bulgaro:      { youtubeId: 'vUFnRoFXISg', tip: 'Passo longo, joelho traseiro quase no chão, tronco ereto' },
+        leg_press:                { youtubeId: '3ZX9MqxRZqI', tip: 'Nunca trave os joelhos no topo, lombar grudada no banco' },
+        terra_romeno:             { youtubeId: 'jEy_czb3RKA', tip: 'Empurre o quadril para trás, barra colada nas pernas, coluna neutra' },
+        mesa_flexora:             { youtubeId: 'Orxowest56U', tip: 'Glúteo apertado contra o banco, controle na descida' },
+        cadeira_extensora:        { youtubeId: 'YyvSfVjQeL0', tip: 'Não trave o joelho no topo, controle total na excêntrica' },
+        panturrilha_em_pe:        { youtubeId: 'gwLzBJYoWlI', tip: 'Segure 2 segundos no topo, desce totalmente para alongar' },
+        hip_thrust:               { youtubeId: 'xDmFkJxPzeM', tip: 'Ombros no banco, contraia o glúteo 2s no topo, coluna neutra' },
+        supino_reto_halteres:     { youtubeId: 'VmB1G1K7v94', tip: 'Escápulas esmagadas, halteres no plano escapular, descida controlada' },
+        supino_inclinado_halteres:{ youtubeId: 'DbFgADa2PL8', tip: 'Banco a 30-45°, não a 90°. Cotovelos levemente à frente' },
+        desenvolvimento_halteres: { youtubeId: 'qEwKCR5JCog', tip: 'Banco a 75-80°, cotovelos à frente do plano lateral do corpo' },
+        elevacao_lateral:         { youtubeId: 'XPPfnSEATJA', tip: 'Plano escapular (30° à frente), pense em "jogar água na parede"' },
+        triceps_corda:            { youtubeId: 'vB5OHsJ3EME', tip: 'Abra a corda no final, cotovelos fixos ao lado do corpo' },
+        puxada_frente:            { youtubeId: 'CAwf7n6Luuc', tip: 'Puxe com os cotovelos, não os punhos. Estufe o peito no final' },
+        remada_maquina:           { youtubeId: 'GZbfZ033f74', tip: 'Peito no apoio, puxe para o umbigo, controle na volta' },
+        remada_curvada:           { youtubeId: 'pYcpY20QaE8', tip: 'Coluna neutra OBRIGATÓRIO. Core bracing. Puxe para o umbigo' },
+        rosca_direta:             { youtubeId: 'ykJmrZ5v0Oo', tip: 'Cotovelos fixos nas laterais, não balance a lombar' },
+        prancha_abdominal:        { youtubeId: 'pvIjChbGka8', tip: 'Glúteo contraído, puxe cotovelos em direção aos pés, não afunde o quadril' },
+      };
+
+      function getVideoEntry(exerciseId) {
+        if (!exerciseId) return null;
+        const clean = exerciseId.toLowerCase().replace(/[\s-]/g, '_');
+        return VIDEO_CATALOG_JS[clean] || null;
+      }
+
+      function showExerciseTutorial(exercise, onClose) {
+        const modal = document.getElementById('video-tutorial-modal');
+        const nameEl = document.getElementById('tutorial-exercise-name');
+        const iframeEl = document.getElementById('tutorial-iframe');
+        const fallbackEl = document.getElementById('tutorial-search-fallback');
+        const searchLinkEl = document.getElementById('tutorial-search-link');
+        const tipEl = document.getElementById('tutorial-tip');
+
+        const exId = exercise?.id || '';
+        const exName = exercise?.n || exercise?.name || 'Exercício';
+        const entry = getVideoEntry(exId);
+
+        nameEl.textContent = exName;
+
+        if (entry && entry.youtubeId) {
+          iframeEl.src = `https://www.youtube.com/embed/${entry.youtubeId}?autoplay=0&rel=0&modestbranding=1`;
+          iframeEl.classList.remove('hidden');
+          fallbackEl.classList.add('hidden');
+          tipEl.textContent = entry.tip || 'Observe a técnica e posição das articulações.';
+        } else {
+          iframeEl.src = '';
+          iframeEl.classList.add('hidden');
+          fallbackEl.classList.remove('hidden');
+          const searchQuery = encodeURIComponent((exName) + ' técnica correta execução');
+          searchLinkEl.href = `https://www.youtube.com/results?search_query=${searchQuery}`;
+          tipEl.textContent = 'Pesquise e assista um tutorial antes de executar.';
+        }
+
+        // Store callback for when user clicks "Iniciar"
+        modal._onClose = onClose || null;
+        modal.classList.remove('hidden');
+      }
+
+      function closeTutorialAndStartCamera() {
+        const modal = document.getElementById('video-tutorial-modal');
+        const iframeEl = document.getElementById('tutorial-iframe');
+        iframeEl.src = ''; // Stop video
+        modal.classList.add('hidden');
+        if (typeof modal._onClose === 'function') modal._onClose();
+      }
+
+      // ─── Pose Analyzer (inline) ───────────────────────────────────
+
+      function calcAngle(a, b, c) {
+        const rad = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
+        let deg = Math.abs(rad * 180 / Math.PI);
+        return deg > 180 ? 360 - deg : deg;
+      }
+
+      function lmVisible(lm, t) { return (lm?.visibility ?? 1) >= (t || 0.5); }
+
+      function analyzePoseLive(landmarks, padrao_motor) {
+        if (!landmarks || landmarks.length < 29) return { isGood: true, messages: [], positives: [], score: 100 };
+        const lm = landmarks;
+        const messages = [], positives = [];
+        let issues = 0, total = 0;
+
+        function check(ok, bad, good) {
+          total++;
+          if (!ok) { messages.push(bad); issues++; }
+          else if (good) positives.push(good);
+        }
+
+        if (padrao_motor === 'squat') {
+          if (lmVisible(lm[23]) && lmVisible(lm[25]) && lmVisible(lm[27])) {
+            const kneeAngle = calcAngle(lm[23], lm[25], lm[27]);
+            check(kneeAngle <= 160, '⬇️ Desça mais — tente chegar a 90°', kneeAngle <= 120 ? '✅ Boa profundidade!' : null);
+            check(kneeAngle >= 60, '⚠️ Cuidado com a sobrecarga lombar na descida extrema', null);
+          }
+          if (lmVisible(lm[25]) && lmVisible(lm[23]) && lmVisible(lm[27])) {
+            const hipX = lm[23].x, kneeX = lm[25].x, ankleX = lm[27].x;
+            check(Math.abs(kneeX - (hipX + ankleX) / 2) <= 0.07, '🦵 Joelho caindo para dentro — empurre os joelhos para fora', '✅ Alinhamento do joelho ótimo');
+          }
+        }
+
+        if (padrao_motor === 'push') {
+          if (lmVisible(lm[11]) && lmVisible(lm[13]) && lmVisible(lm[15])) {
+            const angle = calcAngle(lm[11], lm[13], lm[15]);
+            check(angle >= 50 && angle <= 110, angle < 50 ? '💪 Cotovelo muito fechado — abra levemente' : '⚠️ Cotovelo muito aberto — risco de ombro', '✅ Ângulo de cotovelo ideal');
+          }
+        }
+
+        if (padrao_motor === 'pull') {
+          if (lmVisible(lm[11]) && lmVisible(lm[13])) {
+            check(lm[13].y >= lm[11].y, '⬇️ Puxe mais — cotovelo deve descer além do ombro', '✅ Boa amplitude de puxada');
+          }
+        }
+
+        if (padrao_motor === 'hinge') {
+          if (lmVisible(lm[11]) && lmVisible(lm[23]) && lmVisible(lm[25])) {
+            const spineAngle = calcAngle(lm[11], lm[23], lm[25]);
+            check(spineAngle >= 120, '🔴 Coluna arredondada — mantenha a coluna NEUTRA!', '✅ Coluna neutra');
+          }
+        }
+
+        if (padrao_motor === 'core') {
+          if (lmVisible(lm[11]) && lmVisible(lm[23]) && lmVisible(lm[27])) {
+            const bodyAngle = calcAngle(lm[11], lm[23], lm[27]);
+            check(bodyAngle >= 155, '⬆️ Quadril caindo — eleve e contraia o glúteo', '✅ Alinhamento corporal perfeito');
+          }
+        }
+
+        const score = total > 0 ? Math.round(((total - issues) / total) * 100) : 100;
+        return { isGood: issues === 0, messages, positives, score };
+      }
+
+      // ─── Integrate with startVisionAI ────────────────────────────
+
+      // Override to show tutorial modal first
+      const _originalStartVisionAI = typeof startVisionAI !== 'undefined' ? startVisionAI : null;
+
+      function startVisionAIWithTutorial() {
+        // Find current exercise from active program
+        let currentExercise = null;
+        if (typeof activeProgram !== 'undefined' && activeProgram?.program_data?.days) {
+          const dayNames = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
+          const todayStr = dayNames[new Date().getDay()].substring(0, 3);
+          const todayWorkout = activeProgram.program_data.days.find(d =>
+            typeof d.day === 'string' && d.day.toLowerCase().includes(todayStr)
+          );
+          if (todayWorkout?.exercises?.length > 0) {
+            currentExercise = todayWorkout.exercises[0];
+          }
+        }
+
+        if (currentExercise) {
+          showExerciseTutorial(currentExercise, () => startVisionAI());
+        } else {
+          // No exercise context — start camera directly
+          startVisionAI();
+        }
+      }
+
+      // Hook into MediaPipe onResults to add real-time pose feedback
+      // This runs AFTER the existing onResults callback
+      let _lastPosePattern = 'squat';
+      let _poseFrameBuffer = [];
+      const POSE_FRAME_WINDOW = 5;
+
+      function updatePoseFeedbackOverlay(landmarks, padrao_motor) {
+        _poseFrameBuffer.push(analyzePoseLive(landmarks, padrao_motor || _lastPosePattern));
+        if (_poseFrameBuffer.length > POSE_FRAME_WINDOW) _poseFrameBuffer.shift();
+
+        // Aggregate over window
+        const aggMessages = new Set();
+        const aggPositives = new Set();
+        let totalScore = 0;
+        _poseFrameBuffer.forEach(f => {
+          f.messages.forEach(m => aggMessages.add(m));
+          f.positives.forEach(p => aggPositives.add(p));
+          totalScore += f.score;
+        });
+        const avgScore = Math.round(totalScore / _poseFrameBuffer.length);
+
+        const feedbackEl = document.getElementById('vision-feedback');
+        if (!feedbackEl) return;
+
+        if (aggMessages.size > 0) {
+          const msgs = [...aggMessages];
+          feedbackEl.textContent = msgs[0]; // Show most critical
+          feedbackEl.style.color = '#ef4444';
+          feedbackEl.style.borderColor = '#ef4444';
+        } else if (aggPositives.size > 0) {
+          feedbackEl.textContent = [...aggPositives][0];
+          feedbackEl.style.color = '#22c55e';
+          feedbackEl.style.borderColor = '#22c55e';
+        } else {
+          feedbackEl.textContent = `⚡ Score Técnico: ${avgScore}/100`;
+          feedbackEl.style.color = avgScore >= 80 ? '#22c55e' : '#CDFF00';
+          feedbackEl.style.borderColor = '';
+        }
+      }
+
+      // Detect padrao_motor from active exercise name
+      function detectPadraoFromExercise(exerciseName) {
+        const n = (exerciseName || '').toLowerCase();
+        if (/agachamento|leg press|cadeira ext|búlgaro/.test(n)) return 'squat';
+        if (/terra|romeno|mesa flex|hip thrust|stiff/.test(n)) return 'hinge';
+        if (/supino|desenvolvimento|flexão|tríceps|elevação/.test(n)) return 'push';
+        if (/remada|puxada|rosca|bíceps|barra fixa/.test(n)) return 'pull';
+        if (/prancha|abdominal|core|plank/.test(n)) return 'core';
+        return 'squat';
       }
     </script>
   </body>
