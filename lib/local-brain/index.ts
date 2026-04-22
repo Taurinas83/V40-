@@ -62,15 +62,34 @@ function handleGenerateProgram(
   userProfile: UserProfile,
   startTime: number
 ): ChatResponse {
-  const normalizedProfile = normalizeProfile(userProfile, prompt);
-  const program = generateProgram(normalizedProfile);
-  const text = generateProgramText(normalizedProfile, program);
+  try {
+    console.log('[LocalBrain] Normalizando perfil...', { objetivo: userProfile.objetivo, dias: userProfile.diasDisponiveis });
+    const normalizedProfile = normalizeProfile(userProfile, prompt);
 
-  return createChatResponse(
-    { text, isProgram: true, program, isWorkout: false },
-    'local',
-    Date.now() - startTime
-  );
+    console.log('[LocalBrain] Gerando programa para:', normalizedProfile.objetivo);
+    const program = generateProgram(normalizedProfile);
+
+    console.log('[LocalBrain] Programa gerado com sucesso! Dias:', program.days.length);
+    const text = generateProgramText(normalizedProfile, program);
+
+    return createChatResponse(
+      { text, isProgram: true, program, isWorkout: false },
+      'local',
+      Date.now() - startTime
+    );
+  } catch (error) {
+    console.error('[LocalBrain] ERRO ao gerar programa:', error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    return createChatResponse(
+      {
+        text: `Erro ao gerar treino local: ${errorMsg}. Tentando via IA...`,
+        isProgram: false,
+        isWorkout: false
+      },
+      'local',
+      Date.now() - startTime
+    );
+  }
 }
 
 function handleFeedbackAdjustment(

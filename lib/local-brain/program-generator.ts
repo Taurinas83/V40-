@@ -43,24 +43,29 @@ const EQUIPMENT_DEFAULTS = ['peso_corporal', 'halter', 'banco', 'maquina', 'cabo
  * Main entry: generate a complete program for a user profile.
  */
 export function generateProgram(profile: UserProfile): ProgramData {
-  const {
-    objetivo,
-    nivel = 'iniciante',
-    diasDisponiveis = 3,
-    equipamento = EQUIPMENT_DEFAULTS,
-    lesoes = [],
-    idade = 45,
-    semanaAtual = 1,
-  } = profile;
+  try {
+    console.log('[Generator] Iniciando geração com perfil:', { objetivo: profile.objetivo, dias: profile.diasDisponiveis });
 
-  // 1. Find the best matching template
-  const template = findBestTemplate({
-    objetivo,
-    nivel,
-    frequencia: diasDisponiveis,
-    lesoes,
-    idade,
-  });
+    const {
+      objetivo,
+      nivel = 'iniciante',
+      diasDisponiveis = 3,
+      equipamento = EQUIPMENT_DEFAULTS,
+      lesoes = [],
+      idade = 45,
+      semanaAtual = 1,
+    } = profile;
+
+    // 1. Find the best matching template
+    console.log('[Generator] Buscando template melhor...');
+    const template = findBestTemplate({
+      objetivo,
+      nivel,
+      frequencia: diasDisponiveis,
+      lesoes,
+      idade,
+    });
+    console.log('[Generator] Template encontrado:', template.nome);
 
   // 2. Select periodization scheme
   const scheme = selectPeriodization({ objetivo, nivel, idade, duracaoSemanas: template.duracaoSemanas });
@@ -85,11 +90,18 @@ export function generateProgram(profile: UserProfile): ProgramData {
   // 4. Build program notes
   const notes = buildNotes(template, scheme, weekProfile, lesoes, idade);
 
-  return {
+  const result = {
     name: buildProgramName(template, profile),
     days,
     notes,
   };
+
+  console.log('[Generator] Programa finalizado com', days.length, 'dias');
+  return result;
+  } catch (error) {
+    console.error('[Generator] ERRO:', error);
+    throw error;
+  }
 }
 
 // ─────────────────────────────────────────────────────────
