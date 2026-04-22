@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
+import { canHandleLocally, generateLocalResponse } from '../lib/local-brain/index';
 
 // ==========================================
 // CÉREBRO BASE (KNOWLEDGE DICTIONARY 40+)
@@ -43,6 +44,23 @@ export default async function handler(req: any, res: any) {
 
   try {
     const { prompt, userProfile, currentProgram, recentCheckins } = req.body;
+
+    // ─── LOCAL BRAIN FIRST (zero API cost) ───
+    const localProfile = {
+      objetivo:        userProfile?.objetivo,
+      nivel:           userProfile?.nivel,
+      diasDisponiveis: userProfile?.diasDisponiveis,
+      equipamento:     userProfile?.equipamento,
+      lesoes:          userProfile?.lesoes,
+      idade:           userProfile?.age,
+      genero:          userProfile?.gender,
+      nome:            userProfile?.name,
+    };
+    if (canHandleLocally(prompt, localProfile)) {
+      const localResponse = generateLocalResponse(prompt, localProfile, Date.now());
+      return res.status(200).json(localResponse);
+    }
+    // ─────────────────────────────────────────
 
     const geminiApiKey = process.env.GEMINI_API_KEY;
     const openaiApiKey = process.env.OPENAI_API_KEY;
