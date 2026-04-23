@@ -299,6 +299,7 @@ function generateDays(split: string, frequency: number) {
   };
 
   const patterns = dayPatterns[split] || dayPatterns.fullbody;
+  const dayNames = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
   const days = [];
 
   for (let i = 0; i < frequency; i++) {
@@ -317,7 +318,7 @@ function generateDays(split: string, frequency: number) {
     }
 
     days.push({
-      label: `Dia ${i + 1}`,
+      label: dayNames[i % dayNames.length],  // Use actual weekday name
       focus: pattern.slice(0, 2).join(', '),
       slots,
     });

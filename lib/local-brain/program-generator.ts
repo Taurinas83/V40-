@@ -71,7 +71,8 @@ export function generateProgram(profile: UserProfile): ProgramData {
   const scheme = selectPeriodization({ objetivo, nivel, idade, duracaoSemanas: template.duracaoSemanas });
   const weekProfile = getWeekProfile(scheme, semanaAtual);
 
-  // 3. Generate each training day
+  // 3. Generate each training day — map to actual weekdays
+  const dayNames = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
   const days: ProgramDay[] = template.dias.map((daySlot, idx) => {
     const exercises = generateExercisesForDay(daySlot, {
       equipamento,
@@ -81,7 +82,7 @@ export function generateProgram(profile: UserProfile): ProgramData {
     });
 
     return {
-      day: daySlot.label,
+      day: dayNames[idx % dayNames.length],  // Map to actual weekday name
       focus: daySlot.focus,
       exercises,
     };

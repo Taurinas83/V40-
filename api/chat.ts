@@ -103,11 +103,12 @@ function buildInlineProgram(objetivo: string, dias: number, nivel: string, nome:
   };
 
   const labels = splitDays[dias] || splitDays[3];
-  const days = labels.map((label: string) => {
+  const dayNames = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+  const days = labels.map((label: string, idx: number) => {
     const focusKey = Object.keys(exercisesByFocus).find(k => label.includes(k)) || 'Fullbody';
     return {
-      day: label,
-      focus: label,
+      day: dayNames[idx % dayNames.length],  // Use actual weekday name
+      focus: label,  // Keep original focus label for exercise hints
       exercises: exercisesByFocus[focusKey],
     };
   });
