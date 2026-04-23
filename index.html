@@ -1616,12 +1616,14 @@
         const todayName = dayNames[new Date().getDay()];
 
         const daysHtml = prog.days
-          .map((day) => {
+          .map((day, idx) => {
+            // Garante que cada dia tem um nome - se não tiver, usa os dayNames
+            const dayName = day.day || dayNames[(idx + 1) % dayNames.length];
             const isToday =
-              day.day === todayName ||
-              day.day.startsWith(todayName.slice(0, 3));
+              dayName === todayName ||
+              dayName.startsWith(todayName.slice(0, 3));
             const exHtml = day.exercises
-              .map((e, idx) => buildExerciseCard(e, idx))
+              .map((e, eidx) => buildExerciseCard(e, eidx))
               .join("");
 
             return `
@@ -1629,10 +1631,10 @@
                         <div class="flex justify-between items-center mb-6">
                             <div>
                                 ${isToday ? '<span class="label-bold text-primary animate-pulse tracking-[4px]">Sessão de Hoje</span>' : ""}
-                                <h4 class="bold-title text-4xl text-white mt-1">${escapeHtml(day.day)}</h4>
-                                <p class="text-zinc-500 font-display font-black text-xs uppercase tracking-tight">${escapeHtml(day.focus)}</p>
+                                <h4 class="bold-title text-4xl text-white mt-1">${escapeHtml(dayName)}</h4>
+                                <p class="text-zinc-500 font-display font-black text-xs uppercase tracking-tight">${escapeHtml(day.focus || "Treino")}</p>
                             </div>
-                            <button onclick="showCheckinModal('${escapeHtml(day.day)} - ${escapeHtml(day.focus)}')" class="btn-bold px-4 py-2 text-[10px]">PUNCHIN</button>
+                            <button onclick="showCheckinModal('${escapeHtml(dayName)} - ${escapeHtml(day.focus || "Treino")}')" class="btn-bold px-4 py-2 text-[10px]">PUNCHIN</button>
                         </div>
                         <div class="space-y-4">${exHtml}</div>
                     </div>`;
