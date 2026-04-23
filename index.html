@@ -741,6 +741,24 @@
             </div>
           </div>
 
+          <!-- REST TIMER OVERLAY -->
+          <div
+            id="rest-timer-overlay"
+            class="fixed inset-0 z-50 hidden flex flex-col items-center justify-center bg-black/80 p-4 pointer-events-auto"
+          >
+            <div class="text-center">
+              <p class="text-zinc-400 text-sm mb-4 uppercase tracking-widest">Tempo de Descanso</p>
+              <div class="text-9xl font-black text-primary mb-6 font-display" id="rest-timer-display">90</div>
+              <div class="w-64 h-3 bg-zinc-800 rounded-full overflow-hidden mb-8">
+                <div id="rest-timer-bar" class="bg-primary h-full w-full transition-all duration-1000"></div>
+              </div>
+              <div class="flex gap-3 justify-center">
+                <button onclick="pauseRestTimer()" class="px-6 py-3 bg-zinc-800 text-white rounded-lg font-black uppercase text-sm">⏸ Pausar</button>
+                <button onclick="stopRestTimer()" class="px-6 py-3 bg-red-900 text-white rounded-lg font-black uppercase text-sm">⏹ Parar</button>
+              </div>
+            </div>
+          </div>
+
           <video
             id="webcam-video"
             class="w-full h-full object-cover hidden"
@@ -1925,8 +1943,9 @@
                              <div class="label-bold mt-1">REST: ${e.t}S</div>
                         </div>
                     </div>
-                    <div class="mb-3">
+                    <div class="mb-3 space-y-2">
                         ${tutorialBtn}
+                        <button onclick="startRestTimer(${e.t || 90})" class="w-full text-[10px] text-black font-black uppercase bg-accent px-3 py-2 rounded hover:bg-accent/80">⏱ ${e.t || 90}s Descanso</button>
                     </div>
                     ${
                       hasDetails
@@ -2129,6 +2148,11 @@
           parseFloat(document.getElementById("ci-weight").value) || null;
         const notes = document.getElementById("ci-notes").value.trim();
 
+        if (!user || !user.id) {
+          showToast("Erro: Usuário não autenticado", "error");
+          return;
+        }
+
         try {
           const { error } = await sb.from("checkins").insert({
             user_id: user.id,
@@ -2139,7 +2163,10 @@
             weight,
             notes,
           });
-          if (error) throw error;
+          if (error) {
+            console.error("[SaveCheckin] Supabase error:", error);
+            throw error;
+          }
 
           recentCheckins.unshift({
             day_key: dayKey,
@@ -2152,7 +2179,7 @@
           closeModal();
           renderHome();
           renderProgram();
-          showToast("Check-in registrado!", "success");
+          showToast("✅ Check-in registrado com sucesso!", "success");
           setTimeout(
             () =>
               addChatMsg(
@@ -2162,7 +2189,8 @@
             300,
           );
         } catch (e) {
-          showToast("Erro ao salvar check-in: " + e.message, "error");
+          console.error("[SaveCheckin] Error:", e);
+          showToast("Erro ao salvar check-in: " + (e.message || JSON.stringify(e)), "error");
         }
       }
 
@@ -2213,6 +2241,10 @@
       let visionStream = null;
       let visionInterval = null;
       let warmupInterval = null;
+      let restTimerInterval = null;
+      let restTimerSeconds = 0;
+      let restTimerTotal = 0;
+      let restTimerPaused = false;
       let poseInstance = null;
       let isCameraRunning = false;
       let aiAnalysisActive = true;
@@ -2484,6 +2516,95 @@
         hud.classList.add("hidden");
         status.classList.remove("hidden");
         speakMessage("Sensor neural desativado.");
+      }
+
+      function startRestTimer(seconds = 90) {
+        restTimerSeconds = seconds;
+        restTimerTotal = seconds;
+        restTimerPaused = false;
+
+        const overlay = document.getElementById("rest-timer-overlay");
+        overlay.classList.remove("hidden");
+
+        restTimerInterval = setInterval(() => {
+          if (!restTimerPaused) {
+            restTimerSeconds--;
+            updateRestTimerDisplay();
+
+            if (restTimerSeconds <= 0) {
+              clearInterval(restTimerInterval);
+              playRestAlarm();
+              setTimeout(() => {
+                overlay.classList.add("hidden");
+                showToast("✅ Tempo de descanso finalizado! Próxima série pronta.", "success");
+              }, 2000);
+            }
+          }
+        }, 1000);
+      }
+
+      function updateRestTimerDisplay() {
+        const display = document.getElementById("rest-timer-display");
+        const bar = document.getElementById("rest-timer-bar");
+
+        const minutes = Math.floor(restTimerSeconds / 60);
+        const secs = restTimerSeconds % 60;
+        display.textContent = `${minutes}:${secs.toString().padStart(2, '0')}`;
+
+        const percent = (restTimerSeconds / restTimerTotal) * 100;
+        bar.style.width = percent + "%";
+      }
+
+      function pauseRestTimer() {
+        restTimerPaused = !restTimerPaused;
+        const btn = event.target;
+        if (restTimerPaused) {
+          btn.textContent = "▶ Retomar";
+          btn.classList.add("bg-primary", "text-black");
+          btn.classList.remove("bg-zinc-800", "text-white");
+        } else {
+          btn.textContent = "⏸ Pausar";
+          btn.classList.remove("bg-primary", "text-black");
+          btn.classList.add("bg-zinc-800", "text-white");
+        }
+      }
+
+      function stopRestTimer() {
+        if (restTimerInterval) clearInterval(restTimerInterval);
+        document.getElementById("rest-timer-overlay").classList.add("hidden");
+        showToast("Descanso cancelado", "info");
+      }
+
+      function playRestAlarm() {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = 1000;
+        oscillator.type = "sine";
+
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+
+        // Segundo beep
+        setTimeout(() => {
+          const osc2 = audioContext.createOscillator();
+          const gain2 = audioContext.createGain();
+          osc2.connect(gain2);
+          gain2.connect(audioContext.destination);
+          osc2.frequency.value = 1200;
+          osc2.type = "sine";
+          gain2.gain.setValueAtTime(0.3, audioContext.currentTime);
+          gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+          osc2.start(audioContext.currentTime);
+          osc2.stop(audioContext.currentTime + 0.5);
+        }, 150);
       }
 
       // ================================================================
