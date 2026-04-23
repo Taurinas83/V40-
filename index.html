@@ -1426,7 +1426,7 @@
                         </div>
                         <p class="text-white font-black text-xl italic uppercase tracking-tighter">${escapeHtml(todayDay.focus)}</p>
                     </div>
-                    <button onclick="startDayWorkout('${encodeURIComponent(JSON.stringify(todayDay))}')" class="w-full btn-bold py-5 flex justify-center items-center gap-3 text-lg">
+                    <button onclick="startDayWorkout(${JSON.stringify(todayDay).replace(/"/g, '&quot;')})" class="w-full btn-bold py-5 flex justify-center items-center gap-3 text-lg">
                         ▶ INICIAR PROTOCOLO
                     </button>`
                         : `
@@ -1509,8 +1509,18 @@
         }, 300);
       }
 
-      function startDayWorkout(dayStr) {
-        const day = JSON.parse(decodeURIComponent(dayStr));
+      function startDayWorkout(day) {
+        // Se receber uma string (para compatibilidade), faz parse
+        if (typeof day === 'string') {
+          day = JSON.parse(decodeURIComponent(day));
+        }
+
+        if (!day || !day.focus) {
+          console.error("Erro ao iniciar treino: dia inválido", day);
+          showToast("Erro ao iniciar treino", "error");
+          return;
+        }
+
         showPage("ia", document.querySelectorAll(".nav-item")[1]);
         setTimeout(() => {
           document.getElementById("chat-input").value =
@@ -2265,7 +2275,7 @@
       let visionStream = null;
       let visionInterval = null;
       let warmupInterval = null;
-      let restTimerInterval = null;
+      let currentDayWorkout = null;  // Armazenar o dia atual para iniciar
       let restTimerSeconds = 0;
       let restTimerTotal = 0;
       let restTimerPaused = false;
