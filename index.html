@@ -1901,6 +1901,11 @@
           )
           .join("");
         const hasDetails = descHtml || mistakesHtml || e.video_url;
+        const exId = e.id || '';
+        const hasVideo = typeof VIDEO_CATALOG_JS !== 'undefined' && VIDEO_CATALOG_JS[exId];
+        const tutorialBtn = hasVideo
+          ? `<button onclick='showExerciseTutorial(${JSON.stringify({id:e.id,n:e.n||"Exercício"})})' class="text-[10px] text-primary font-black uppercase bg-primary/10 px-3 py-2 rounded hover:bg-primary/20 w-full text-center">▶ Abrir Tutorial com Vídeo</button>`
+          : `<a href="https://www.youtube.com/results?search_query=${encodeURIComponent((e.n||'exercício')+' técnica correta')}" target="_blank" class="block text-[10px] text-zinc-400 font-black uppercase bg-zinc-800 px-3 py-2 rounded text-center hover:text-zinc-300">🔍 Buscar no YouTube</a>`;
 
         return `
                 <div class="card-bold mb-4">
@@ -1917,6 +1922,9 @@
                              <div class="text-3xl font-display font-black text-primary leading-none uppercase">${e.sets}X${e.reps}</div>
                              <div class="label-bold mt-1">REST: ${e.t}S</div>
                         </div>
+                    </div>
+                    <div class="mb-3">
+                        ${tutorialBtn}
                     </div>
                     ${
                       hasDetails
