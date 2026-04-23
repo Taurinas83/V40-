@@ -2153,29 +2153,32 @@
           return;
         }
 
+        const checkinData = {
+          day_key: dayKey,
+          fatigue,
+          rpe,
+          weight,
+          notes,
+          created_at: new Date().toISOString(),
+          user_id: user.id,
+          program_id: activeProgram ? activeProgram.id : null,
+        };
+
         try {
-          const { error } = await sb.from("checkins").insert({
-            user_id: user.id,
-            program_id: activeProgram ? activeProgram.id : null,
-            day_key: dayKey,
-            fatigue,
-            rpe,
-            weight,
-            notes,
-          });
+          // Tenta salvar no Supabase
+          const { error } = await sb.from("checkins").insert([checkinData]);
+
           if (error) {
-            console.error("[SaveCheckin] Supabase error:", error);
-            throw error;
+            console.warn("[SaveCheckin] Supabase falhou, salvando localmente:", error);
+            // Fallback: salva localmente se Supabase falhar
+            saveCheckinLocally(checkinData);
+          } else {
+            console.log("[SaveCheckin] Salvo no Supabase com sucesso");
           }
 
-          recentCheckins.unshift({
-            day_key: dayKey,
-            fatigue,
-            rpe,
-            weight,
-            notes,
-            created_at: new Date().toISOString(),
-          });
+          // Em ambos os casos, adiciona ao array local
+          recentCheckins.unshift(checkinData);
+
           closeModal();
           renderHome();
           renderProgram();
@@ -2190,7 +2193,26 @@
           );
         } catch (e) {
           console.error("[SaveCheckin] Error:", e);
-          showToast("Erro ao salvar check-in: " + (e.message || JSON.stringify(e)), "error");
+          // Fallback: salva localmente em caso de erro
+          saveCheckinLocally(checkinData);
+          recentCheckins.unshift(checkinData);
+          closeModal();
+          renderHome();
+          renderProgram();
+          showToast("✅ Check-in registrado localmente (offline)", "info");
+        }
+      }
+
+      function saveCheckinLocally(checkinData) {
+        try {
+          let checkins = JSON.parse(localStorage.getItem("v40_checkins") || "[]");
+          checkins.unshift(checkinData);
+          // Manter apenas os últimos 100 checkins
+          checkins = checkins.slice(0, 100);
+          localStorage.setItem("v40_checkins", JSON.stringify(checkins));
+          console.log("[SaveCheckinLocally] Salvo com sucesso:", checkinData.day_key);
+        } catch (e) {
+          console.error("[SaveCheckinLocally] Erro ao salvar localmente:", e);
         }
       }
 
