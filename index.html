@@ -1945,7 +1945,7 @@
                     </div>
                     <div class="mb-3 space-y-2">
                         ${tutorialBtn}
-                        <button onclick="startRestTimer(${e.t || 90})" class="w-full text-[10px] text-black font-black uppercase bg-accent px-3 py-2 rounded hover:bg-accent/80">⏱ ${e.t || 90}s Descanso</button>
+                        <button onclick="startRestTimer(${parseInt(e.t) || 90})" class="w-full text-[10px] text-black font-black uppercase bg-accent px-3 py-2 rounded hover:bg-accent/80">⏱ ${parseInt(e.t) || 90}s Descanso</button>
                     </div>
                     ${
                       hasDetails
@@ -2541,28 +2541,48 @@
       }
 
       function startRestTimer(seconds = 90) {
-        restTimerSeconds = seconds;
-        restTimerTotal = seconds;
-        restTimerPaused = false;
+        try {
+          // Garantir que seconds é um número
+          restTimerSeconds = Math.max(1, parseInt(seconds) || 90);
+          restTimerTotal = restTimerSeconds;
+          restTimerPaused = false;
 
-        const overlay = document.getElementById("rest-timer-overlay");
-        overlay.classList.remove("hidden");
+          // Limpar timer anterior se existir
+          if (restTimerInterval) clearInterval(restTimerInterval);
 
-        restTimerInterval = setInterval(() => {
-          if (!restTimerPaused) {
-            restTimerSeconds--;
-            updateRestTimerDisplay();
-
-            if (restTimerSeconds <= 0) {
-              clearInterval(restTimerInterval);
-              playRestAlarm();
-              setTimeout(() => {
-                overlay.classList.add("hidden");
-                showToast("✅ Tempo de descanso finalizado! Próxima série pronta.", "success");
-              }, 2000);
-            }
+          const overlay = document.getElementById("rest-timer-overlay");
+          if (!overlay) {
+            console.error("[StartRestTimer] Overlay não encontrado");
+            return;
           }
-        }, 1000);
+
+          overlay.classList.remove("hidden");
+          updateRestTimerDisplay();
+
+          restTimerInterval = setInterval(() => {
+            if (!restTimerPaused && restTimerSeconds > 0) {
+              restTimerSeconds--;
+              updateRestTimerDisplay();
+
+              if (restTimerSeconds <= 0) {
+                clearInterval(restTimerInterval);
+                restTimerInterval = null;
+
+                // Mostrar mensagem e alarme
+                showToast("✅ Tempo de descanso finalizado! Próxima série pronta.", "success");
+                playRestAlarm();
+
+                // Ocultar overlay após 3 segundos
+                setTimeout(() => {
+                  overlay.classList.add("hidden");
+                }, 3000);
+              }
+            }
+          }, 1000);
+        } catch (e) {
+          console.error("[StartRestTimer] Erro:", e);
+          showToast("Erro ao iniciar cronômetro: " + e.message, "error");
+        }
       }
 
       function updateRestTimerDisplay() {
