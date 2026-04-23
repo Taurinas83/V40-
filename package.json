@@ -2,7 +2,7 @@
   "name": "vitalidade-40-app",
   "description": "Personal Trainer IA especializado em longevidade e hipertrofia para 40+",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.1.0",
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
