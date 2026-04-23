@@ -741,24 +741,6 @@
             </div>
           </div>
 
-          <!-- REST TIMER OVERLAY -->
-          <div
-            id="rest-timer-overlay"
-            class="fixed inset-0 z-50 hidden flex flex-col items-center justify-center bg-black/80 p-4 pointer-events-auto"
-          >
-            <div class="text-center">
-              <p class="text-zinc-400 text-sm mb-4 uppercase tracking-widest">Tempo de Descanso</p>
-              <div class="text-9xl font-black text-primary mb-6 font-display" id="rest-timer-display">90</div>
-              <div class="w-64 h-3 bg-zinc-800 rounded-full overflow-hidden mb-8">
-                <div id="rest-timer-bar" class="bg-primary h-full w-full transition-all duration-1000"></div>
-              </div>
-              <div class="flex gap-3 justify-center">
-                <button onclick="pauseRestTimer()" class="px-6 py-3 bg-zinc-800 text-white rounded-lg font-black uppercase text-sm">⏸ Pausar</button>
-                <button onclick="stopRestTimer()" class="px-6 py-3 bg-red-900 text-white rounded-lg font-black uppercase text-sm">⏹ Parar</button>
-              </div>
-            </div>
-          </div>
-
           <video
             id="webcam-video"
             class="w-full h-full object-cover hidden"
@@ -1955,9 +1937,8 @@
                              <div class="label-bold mt-1">REST: ${e.t}S</div>
                         </div>
                     </div>
-                    <div class="mb-3 space-y-2">
+                    <div class="mb-3">
                         ${tutorialBtn}
-                        <button onclick="startRestTimer(${restSeconds})" class="w-full text-[10px] text-black font-black uppercase bg-accent px-3 py-2 rounded hover:bg-accent/80">⏱ ${restSeconds}s Descanso</button>
                     </div>
                     ${
                       hasDetails
