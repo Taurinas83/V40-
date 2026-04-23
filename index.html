@@ -1908,7 +1908,6 @@
       // ================================================================
       function buildExerciseCard(e, idx) {
         const cid = "ex-" + Math.random().toString(36).slice(2, 8);
-        const restBtnId = "rest-btn-" + Math.random().toString(36).slice(2, 8);
         const restSeconds = Math.max(1, parseInt(e.t) || 90);
 
         const descHtml = (e.desc || [])
@@ -1930,7 +1929,7 @@
           ? `<button onclick='showExerciseTutorial(${JSON.stringify({id:e.id,n:e.n||"Exercício"})})' class="text-[10px] text-primary font-black uppercase bg-primary/10 px-3 py-2 rounded hover:bg-primary/20 w-full text-center">▶ Abrir Tutorial com Vídeo</button>`
           : `<a href="https://www.youtube.com/results?search_query=${encodeURIComponent((e.n||'exercício')+' técnica correta')}" target="_blank" class="block text-[10px] text-zinc-400 font-black uppercase bg-zinc-800 px-3 py-2 rounded text-center hover:text-zinc-300">🔍 Buscar no YouTube</a>`;
 
-        const html = `
+        return `
                 <div class="card-bold mb-4">
                     <div class="flex justify-between items-start mb-4">
                         <div class="flex-1 pr-2">
@@ -1948,7 +1947,7 @@
                     </div>
                     <div class="mb-3 space-y-2">
                         ${tutorialBtn}
-                        <button id="${restBtnId}" data-rest="${restSeconds}" class="w-full text-[10px] text-black font-black uppercase bg-accent px-3 py-2 rounded hover:bg-accent/80 rest-timer-btn">⏱ ${restSeconds}s Descanso</button>
+                        <button onclick="startRestTimer(${restSeconds})" class="w-full text-[10px] text-black font-black uppercase bg-accent px-3 py-2 rounded hover:bg-accent/80">⏱ ${restSeconds}s Descanso</button>
                     </div>
                     ${
                       hasDetails
@@ -1964,20 +1963,6 @@
                         : ""
                     }
                 </div>`;
-
-        // Adicionar listener após renderizar
-        setTimeout(() => {
-          const btn = document.getElementById(restBtnId);
-          if (btn) {
-            btn.addEventListener('click', (e) => {
-              e.preventDefault();
-              const seconds = parseInt(btn.getAttribute('data-rest')) || 90;
-              startRestTimer(seconds);
-            });
-          }
-        }, 100);
-
-        return html;
       }
 
       function toggleEx(cid) {
